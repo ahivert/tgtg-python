@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "tgtg"
+version = "0.1.0"
+description = "Unoffical python client for TooGoodToGo API"
+authors = ["Anthony Hivert <anthony.hivert@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+requests = "2.22.0"
+
+
+[tool.poetry.dev-dependencies]
+flake8 = "3.7.8"
+black = "19.3b0"
+pytest = "5.1.1"
+responses = "0.10.6"
+pytest-cov = "2.7.1"
+isort = "4.3.21"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
