@@ -1,3 +1,5 @@
+[![Actions Status](https://github.com/ahivert/tgtg-python/workflows/CI/badge.svg)](https://github.com/ahivert/tgtg-python/actions)
+
 # tgtg-python
 
 Python client that help you to talk with TooGoodToGo API.
