@@ -15,9 +15,9 @@ jobs:
           python-version: ${{ matrix.python }}
       - run: pip install poetry && poetry install
       - name: Run tests
-        run: make test
+        run: poetry run pytest --cov=tgtg --cov-report=xml
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1.0.2
         with:
           token: ${{secrets.CODECOV_TOKEN}}
-          file: ./.coverage
+          file: ./coverage.xml
