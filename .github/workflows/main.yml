@@ -14,4 +14,9 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - run: pip install poetry && poetry install
-      - run: make test
+      - name: Run tests
+        run: make test
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1.0.2
+        with:
+          token: ${{secrets.CODECOV_TOKEN}}
