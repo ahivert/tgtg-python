@@ -1,6 +1,6 @@
 name: CI
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
   test:
@@ -13,8 +13,5 @@ jobs:
       - uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python }}
-      - run: pip install poetry
-      - run: ls -la
-      - run: poetry --help
-      - run: python --version
+      - run: pip install poetry && poetry install
       - run: make test
