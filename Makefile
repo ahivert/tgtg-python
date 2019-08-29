@@ -4,4 +4,4 @@ style:
 	python3 -m poetry run flake8
 
 test:
-	python3 -m poetry run pytest --cov=tgtg
+	python3 -m poetry run pytest
