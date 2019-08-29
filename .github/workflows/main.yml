@@ -15,6 +15,8 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: Install dependencies
         run: pip install poetry && poetry install
+      - name: Run lint
+        run: make lint
       - name: Run tests
         run: make test
       - name: Upload coverage to Codecov
