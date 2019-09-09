@@ -24,7 +24,9 @@ class TgtgClient:
         auth_with_email = email is not None and password is not None
 
         if not auth_with_email and not auth_with_token:
-            raise ValueError("You must fill email and password or access_token")
+            raise ValueError(
+                "You must fill email and password or access_token and user_id"
+            )
 
         self.access_token = access_token
         self.user_id = user_id
@@ -32,6 +34,7 @@ class TgtgClient:
             login_response = self._login(email, password)
             self.access_token = login_response["access_token"]
             self.user_id = login_response["user_id"]
+            self.language = login_response["language"]
 
     @property
     def item_url(self):

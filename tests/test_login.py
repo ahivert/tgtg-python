@@ -11,7 +11,7 @@ def test_init_client_with_email_password_success():
     responses.add(
         responses.POST,
         urljoin(BASE_URL, LOGIN_ENDPOINT),
-        json={"access_token": "an_access_token", "user_id": 1234},
+        json={"access_token": "an_access_token", "user_id": 1234, "language": "en-US"},
         status=200,
     )
     client = TgtgClient(email="test@test.com", password="test")
