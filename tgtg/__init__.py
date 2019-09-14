@@ -65,8 +65,8 @@ class TgtgClient:
             headers=self.headers,
             data={"email": email, "password": password},
         )
-        if response.status_code == 200:
-            login_response = json.loads(response.content)
+        login_response = json.loads(response.content)
+        if login_response["status_code"] == 1:
             return login_response
         raise TgtgLoginError(response.content)
 
