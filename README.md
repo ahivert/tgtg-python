@@ -3,7 +3,7 @@
 
 # tgtg-python
 
-Python client that help you to talk with TooGoodToGo API.
+Python client that help you to talk with [TooGoodToGo](https://toogoodtogo.com) API.
 
 Handle:
 - login
