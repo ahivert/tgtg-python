@@ -9,6 +9,9 @@ Handle:
 - login
 - list stores (`/item/`)
 
+Used by:
+- https://tgtg-notifier.ahivert.dev
+
 ## Install
 
 For now, install it from github (it will be publish in PyPi)
