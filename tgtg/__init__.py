@@ -116,3 +116,15 @@ class TgtgClient:
             return response.json()["items"]
         except KeyError:
             raise TgtgAPIError(response.content)
+
+    def get_item(self, item_id):
+        self._login()
+        response = requests.post(
+            urljoin(self.item_url, str(item_id)),
+            headers=self.headers,
+            json={"user_id": self.user_id},
+        )
+        try:
+            return response.json()
+        except KeyError:
+            raise TgtgAPIError

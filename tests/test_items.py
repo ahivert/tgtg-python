@@ -30,3 +30,15 @@ def test_get_items_fail():
     client = TgtgClient(access_token="an_access_token", user_id=1234)
     with pytest.raises(TgtgAPIError):
         client.get_items()
+
+
+@responses.activate
+def test_get_item_success():
+    responses.add(
+        responses.POST,
+        urljoin(BASE_URL, API_ITEM_ENDPOINT) + "1",
+        json={},
+        status=200,
+    )
+    client = TgtgClient(access_token="an_access_token", user_id=1234)
+    assert client.get_item(1) == {}

@@ -6,7 +6,7 @@ from tgtg import ALL_BUSINESS_ENDPOINT, BASE_URL, TgtgClient
 
 
 @responses.activate
-def test_get_items_success():
+def test_get_all_business_success():
     data = [
         {
             "id": "88",
