@@ -19,5 +19,7 @@ jobs:
         run: make lint
       - name: Run tests
         run: make test
-      - name: Upload coverage to Codecov
-        run: pip install codecov && codecov --token=${{secrets.CODECOV_TOKEN}}
+      - uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./.coverage
