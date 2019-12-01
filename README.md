@@ -8,6 +8,7 @@ Python client that help you to talk with [TooGoodToGo](https://toogoodtogo.com) 
 Handle:
 - login
 - list stores (`/item/`)
+- get a store (`/item/<pk>`)
 
 Used by:
 - https://tgtg-notifier.ahivert.dev
@@ -34,6 +35,9 @@ client = TgtgClient(access_token=your_access_token, user_id=your_user_id)
 
 # You can then get items (as default it will get your favorites)
 client.get_items()
+
+# Or get an item
+client.get_item(1234)
 
 ```
 
