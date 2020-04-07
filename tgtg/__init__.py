@@ -101,7 +101,7 @@ class TgtgClient:
             "discover": discover,
             "favorites_only": favorites_only,
             "hidden_only": hidden_only,
-            "origin": {"latitude": latitude, "longitude": longitude,},
+            "origin": {"latitude": latitude, "longitude": longitude},
             "page": page,
             "page_size": page_size,
             "radius": radius,
