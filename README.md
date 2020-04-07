@@ -11,7 +11,7 @@ Handle:
 - get a store (`/item/<pk>`)
 
 Used by:
-- https://tgtg-notifier.ahivert.dev
+- https://tgtg-notifier.com
 
 ## Install
 
@@ -45,6 +45,9 @@ client.get_item(1234)
 
 This project use poetry so you will need to install locally poetry to use following
 commands.
+```
+poetry install 
+```
 
 This project use [black](https://github.com/psf/black) to format all the code,
 [isort](https://github.com/timothycrosley/isort) to sort all imports and
