@@ -20,7 +20,7 @@ def test_e2e_get_items():
         favorites_only=False, radius=10, latitude=48.126, longitude=-1.723
     )
     assert len(data) == 100
-    assert list(data[0].keys()) == GLOBAL_PROPERTIES
+    assert all(prop in data[0] for prop in GLOBAL_PROPERTIES)
 
 
 def test_e2e_get_one_item():
@@ -30,7 +30,7 @@ def test_e2e_get_one_item():
     item_id = "36684i2621241"
     data = client.get_item(item_id)
 
-    assert list(data.keys()) == GLOBAL_PROPERTIES
-    assert list(data["item"].keys()) == ITEM_PROPERTIES
-    assert list(data["store"].keys()) == STORE_PROPERTIES
+    assert all(prop in data for prop in GLOBAL_PROPERTIES)
+    assert all(prop in data["item"] for prop in ITEM_PROPERTIES)
+    assert all(prop in data["store"] for prop in STORE_PROPERTIES)
     assert data["item"]["item_id"] == item_id
