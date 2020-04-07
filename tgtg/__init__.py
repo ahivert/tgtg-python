@@ -7,7 +7,7 @@ import requests
 from .exceptions import TgtgAPIError, TgtgLoginError
 
 BASE_URL = "https://apptoogoodtogo.com/"
-API_ITEM_ENDPOINT = "api/item/v1/"
+API_ITEM_ENDPOINT = "api/item/v5/"
 LOGIN_ENDPOINT = "index.php/api_tgtg/login"
 ALL_BUSINESS_ENDPOINT = "index.php/api_tgtg/list_all_business_map_v5_gz"
 
@@ -93,6 +93,7 @@ class TgtgClient:
         page=1,
         page_size=100,
         radius=0.0,
+        we_care_only=False,
         with_stock_only=False,
     ):
         self._login()
@@ -100,15 +101,12 @@ class TgtgClient:
             "discover": discover,
             "favorites_only": favorites_only,
             "hidden_only": hidden_only,
-            "origin": {
-                "latLng": {"a": latitude, "b": longitude},
-                "latitude": latitude,
-                "longitude": longitude,
-            },
+            "origin": {"latitude": latitude, "longitude": longitude,},
             "page": page,
             "page_size": page_size,
             "radius": radius,
             "user_id": self.user_id,
+            "we_care_only": we_care_only,
             "with_stock_only": with_stock_only,
         }
         response = requests.post(self.item_url, headers=self.headers, json=data)
