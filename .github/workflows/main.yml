@@ -1,6 +1,10 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 4 * * 6"
 
 jobs:
   test:
@@ -19,5 +23,8 @@ jobs:
         run: make lint
       - name: Run tests
         run: make test
+        env:
+          TGTG_PASSWORD: ${{secrets.TGTG_PASSWORD}}
+          TGTG_EMAIL: ${{secrets.TGTG_EMAIL}}
       - name: Upload coverage to Codecov
         run: pip install codecov && codecov --token=${{secrets.CODECOV_TOKEN}}
