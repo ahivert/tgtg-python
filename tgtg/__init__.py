@@ -54,9 +54,7 @@ class TgtgClient:
                     "TGTG/19.6.1 Dalvik/2.1.0 (Linux; Android 6.0.1; SM-G920V Build/MMB29K) ",
                 ]
             )
-        headers = {
-            "user-agent": user_agent,
-        }
+        headers = {"user-agent": user_agent}
         if self.access_token:
             headers["authorization"] = f"Bearer {self.access_token}"
         return headers
