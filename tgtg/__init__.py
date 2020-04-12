@@ -14,13 +14,20 @@ ALL_BUSINESS_ENDPOINT = "index.php/api_tgtg/list_all_business_map_v5_gz"
 
 class TgtgClient:
     def __init__(
-        self, url=BASE_URL, email=None, password=None, access_token=None, user_id=None
+        self,
+        url=BASE_URL,
+        email=None,
+        password=None,
+        access_token=None,
+        user_id=None,
+        user_agent=None,
     ):
         self.base_url = url
         self.email = email
         self.password = password
         self.access_token = access_token
         self.user_id = user_id
+        self.user_agent = user_agent
         self.language = None
 
     @property
@@ -37,15 +44,17 @@ class TgtgClient:
 
     @property
     def headers(self):
-        headers = {
-            "user-agent": random.choice(
+        if self.user_agent:
+            user_agent = self.user_agent
+        else:
+            user_agent = random.choice(
                 [
                     "TGTG/19.6.1 Dalvik/2.1.0 (Linux; U; Android 6.0.1; Nexus 5 Build/M4B30Z)",
                     "TGTG/19.6.1 Dalvik/2.1.0 (Linux; U; Android 7.0; SM-G935F Build/NRD90M)",
                     "TGTG/19.6.1 Dalvik/2.1.0 (Linux; Android 6.0.1; SM-G920V Build/MMB29K) ",
                 ]
             )
-        }
+        headers = {"user-agent": user_agent}
         if self.access_token:
             headers["authorization"] = f"Bearer {self.access_token}"
         return headers
