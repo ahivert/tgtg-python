@@ -5,7 +5,7 @@
 
 Python client that help you to talk with [TooGoodToGo](https://toogoodtogo.com) API.
 
-Python version: py3.6, py3.7, py3.8
+Python version: 3.6, 3.7, 3.8
 
 Handle:
 - login
@@ -48,7 +48,7 @@ client.get_item(1234)
 This project use poetry so you will need to install locally poetry to use following
 commands.
 ```
-poetry install 
+poetry install
 ```
 
 This project use [black](https://github.com/psf/black) to format all the code,
