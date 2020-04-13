@@ -5,6 +5,8 @@
 
 Python client that help you to talk with [TooGoodToGo](https://toogoodtogo.com) API.
 
+Python version: py3.6, py3.7, py3.8
+
 Handle:
 - login
 - list stores (`/item/`)
