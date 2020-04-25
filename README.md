@@ -11,17 +11,15 @@ Handle:
 - login
 - list stores (`/item/`)
 - get a store (`/item/<pk>`)
-- get all stores (`index.php/api_tgtg/list_all_business_map_v5_gz`)
+- get all stores (`/index.php/api_tgtg/list_all_business_map_v5_gz`)
 
 Used by:
 - https://tgtg-notifier.com
 
 ## Install
 
-For now, install it from github (it will be publish in PyPi)
-
 ```
-pip install https://github.com/ahivert/tgtg-python/archive/master.zip
+pip install tgtg
 ```
 
 ## Use it
