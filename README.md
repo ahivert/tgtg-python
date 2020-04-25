@@ -11,6 +11,7 @@ Handle:
 - login
 - list stores (`/item/`)
 - get a store (`/item/<pk>`)
+- get all stores (`index.php/api_tgtg/list_all_business_map_v5_gz`)
 
 Used by:
 - https://tgtg-notifier.com
@@ -35,11 +36,23 @@ client = TgtgClient(email=your_email, password=your_password)
 # (you can retrieve them from client after logged with email and password)
 client = TgtgClient(access_token=your_access_token, user_id=your_user_id)
 
-# You can then get items (as default it will get your favorites)
+# You can then get some items, default will get **only** your favorites
 client.get_items()
+
+# To get items (not only your favorites) you need to provide location informations
+client.get_items(
+    favorites_only=False,
+    latitude=48.126,
+    longitude=-1.723,
+    radius=10,
+)
 
 # Or get an item
 client.get_item(1234)
+
+# get all items **without** auth (with limited fields, used for the map in the app)
+client = TgtgClient()
+client.get_all_business()
 
 ```
 
@@ -48,6 +61,7 @@ client.get_item(1234)
 This project use poetry so you will need to install locally poetry to use following
 commands.
 ```
+pip install poetry --user
 poetry install
 ```
 
