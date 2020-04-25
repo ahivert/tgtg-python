@@ -10,6 +10,11 @@ BASE_URL = "https://apptoogoodtogo.com/"
 API_ITEM_ENDPOINT = "api/item/v5/"
 LOGIN_ENDPOINT = "index.php/api_tgtg/login"
 ALL_BUSINESS_ENDPOINT = "index.php/api_tgtg/list_all_business_map_v5_gz"
+USER_AGENTS = [
+    "TGTG/20.3.2 Dalvik/2.1.0 (Linux; U; Android 6.0.1; Nexus 5 Build/M4B30Z)",
+    "TGTG/20.3.2 Dalvik/2.1.0 (Linux; U; Android 7.0; SM-G935F Build/NRD90M)",
+    "TGTG/20.3.2 Dalvik/2.1.0 (Linux; Android 6.0.1; SM-G920V Build/MMB29K) ",
+]
 
 
 class TgtgClient:
@@ -27,7 +32,7 @@ class TgtgClient:
         self.password = password
         self.access_token = access_token
         self.user_id = user_id
-        self.user_agent = user_agent
+        self.user_agent = user_agent if user_agent else random.choice(USER_AGENTS)
         self.language = None
 
     @property
@@ -44,17 +49,7 @@ class TgtgClient:
 
     @property
     def headers(self):
-        if self.user_agent:
-            user_agent = self.user_agent
-        else:
-            user_agent = random.choice(
-                [
-                    "TGTG/19.6.1 Dalvik/2.1.0 (Linux; U; Android 6.0.1; Nexus 5 Build/M4B30Z)",
-                    "TGTG/19.6.1 Dalvik/2.1.0 (Linux; U; Android 7.0; SM-G935F Build/NRD90M)",
-                    "TGTG/19.6.1 Dalvik/2.1.0 (Linux; Android 6.0.1; SM-G920V Build/MMB29K) ",
-                ]
-            )
-        headers = {"user-agent": user_agent}
+        headers = {"user-agent": self.user_agent}
         if self.access_token:
             headers["authorization"] = f"Bearer {self.access_token}"
         return headers
@@ -133,5 +128,5 @@ class TgtgClient:
         )
         try:
             return response.json()
-        except KeyError:
-            raise TgtgAPIError
+        except Exception:
+            raise TgtgAPIError(response.content)

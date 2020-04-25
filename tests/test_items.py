@@ -19,6 +19,15 @@ def test_get_items_success():
     assert client.get_items() == []
 
 
+def test_get_items_custom_user_agent(mocker):
+    mocked_post = mocker.patch("requests.post")
+    client = TgtgClient(access_token="an_access_token", user_id=1234, user_agent="test")
+    client.get_items()
+    assert (
+        mocked_post.call_args_list[0][1]["headers"]["user-agent"] == client.user_agent
+    )
+
+
 @responses.activate
 def test_get_items_fail():
     responses.add(
