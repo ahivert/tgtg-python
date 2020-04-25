@@ -2,7 +2,9 @@
 name = "tgtg"
 version = "0.1.0"
 description = "Unoffical python client for TooGoodToGo API"
+readme = "README.md"
 authors = ["Anthony Hivert <anthony.hivert@gmail.com>"]
+repository = "https://github.com/ahivert/tgtg-python"
 
 [tool.poetry.dependencies]
 python = "^3.6"
