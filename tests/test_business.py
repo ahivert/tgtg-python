@@ -9,9 +9,11 @@ from tgtg import ALL_BUSINESS_ENDPOINT, BASE_URL, TgtgClient
 def test_get_all_business_success():
     data = [
         {
-            "id": "88",
-            "created_by": "88",
+            "id": "95",
+            "created_by": "95",
             "category_id": "1",
+            "category": "MEAL",
+            "diet_categories": [],
             "latitude": "55.65004170",
             "longitude": "12.20162040",
             "business_name": "Asia House - Hedehusene",
@@ -21,10 +23,12 @@ def test_get_all_business_success():
             "pickup_day_offset": "0",
             "current_window_pickup_start_utc": "2019-09-22 19:20:00",
             "current_window_pickup_end_utc": "2019-09-22 19:25:00",
+            "item_id": "854i95",
+            "store_id": "955s",
         }
     ]
     responses.add(
-        responses.GET,
+        responses.POST,
         urljoin(BASE_URL, ALL_BUSINESS_ENDPOINT),
         json={"info": data, "msg": "OK", "status_code": 1},
         status=200,
