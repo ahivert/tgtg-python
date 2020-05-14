@@ -8,10 +8,10 @@ Python client that help you to talk with [TooGoodToGo](https://toogoodtogo.com) 
 Python version: 3.6, 3.7, 3.8
 
 Handle:
-- login
-- list stores (`/item/`)
-- get a store (`/item/<pk>`)
-- get all stores (`/index.php/api_tgtg/list_all_business_map_v5_gz`)
+- login (`/api/auth/v1/loginByEmail`)
+- list stores (`/api/item/`)
+- get a store (`/api/item/<pk>`)
+- get all stores (`/api/map/v1/listAllBusinessMap`)
 
 Used by:
 - https://tgtg-notifier.com
@@ -48,7 +48,7 @@ client.get_items(
 # Or get an item
 client.get_item(1234)
 
-# get all items **without** auth (with limited fields, used for the map in the app)
+# get all items **without** auth (with limited fields, used by the map in the app)
 client = TgtgClient()
 client.get_all_business()
 
