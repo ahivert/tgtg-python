@@ -1,15 +1,16 @@
 import json
 import random
+from http import HTTPStatus
 from urllib.parse import urljoin
 
 import requests
 
 from .exceptions import TgtgAPIError, TgtgLoginError
 
-BASE_URL = "https://apptoogoodtogo.com/"
-API_ITEM_ENDPOINT = "api/item/v5/"
-LOGIN_ENDPOINT = "index.php/api_tgtg/login"
-ALL_BUSINESS_ENDPOINT = "index.php/api_tgtg/list_all_business_map_v5_gz"
+BASE_URL = "https://apptoogoodtogo.com/api/"
+API_ITEM_ENDPOINT = "item/v5/"
+LOGIN_ENDPOINT = "auth/v1/loginByEmail"
+ALL_BUSINESS_ENDPOINT = "map/v1/listAllBusinessMap"
 USER_AGENTS = [
     "TGTG/20.3.2 Dalvik/2.1.0 (Linux; U; Android 6.0.1; Nexus 5 Build/M4B30Z)",
     "TGTG/20.3.2 Dalvik/2.1.0 (Linux; U; Android 7.0; SM-G935F Build/NRD90M)",
@@ -26,6 +27,7 @@ class TgtgClient:
         access_token=None,
         user_id=None,
         user_agent=None,
+        language="en-UK",
     ):
         self.base_url = url
         self.email = email
@@ -33,7 +35,7 @@ class TgtgClient:
         self.access_token = access_token
         self.user_id = user_id
         self.user_agent = user_agent if user_agent else random.choice(USER_AGENTS)
-        self.language = None
+        self.language = language
 
     @property
     def item_url(self):
@@ -49,7 +51,7 @@ class TgtgClient:
 
     @property
     def headers(self):
-        headers = {"user-agent": self.user_agent}
+        headers = {"user-agent": self.user_agent, "accept-language": self.language}
         if self.access_token:
             headers["authorization"] = f"Bearer {self.access_token}"
         return headers
@@ -70,22 +72,25 @@ class TgtgClient:
         response = requests.post(
             self.login_url,
             headers=self.headers,
-            data={"email": self.email, "password": self.password},
+            json={
+                "device_type": "ANDROID",
+                "email": self.email,
+                "password": self.password,
+            },
         )
-        login_response = json.loads(response.content)
-        if login_response["status_code"] == 1:
+        if response.status_code == HTTPStatus.OK:
+            login_response = json.loads(response.content)
             self.access_token = login_response["access_token"]
-            self.user_id = login_response["user_id"]
-            self.language = login_response["language"]
+            self.user_id = login_response["startup_data"]["user"]["user_id"]
         else:
-            raise TgtgLoginError(response.content)
+            raise TgtgLoginError(response.status_code, response.content)
 
     def get_all_business(self):
-        response = requests.get(self.all_business_url)
-        try:
+        response = requests.post(self.all_business_url, headers=self.headers)
+        if response.status_code == HTTPStatus.OK:
             return response.json()["info"]
-        except KeyError:
-            raise TgtgAPIError(response.content)
+        else:
+            raise TgtgAPIError(response.status_code, response.content)
 
     def get_items(
         self,
@@ -114,10 +119,10 @@ class TgtgClient:
             "with_stock_only": with_stock_only,
         }
         response = requests.post(self.item_url, headers=self.headers, json=data)
-        try:
+        if response.status_code == HTTPStatus.OK:
             return response.json()["items"]
-        except KeyError:
-            raise TgtgAPIError(response.content)
+        else:
+            raise TgtgAPIError(response.status_code, response.content)
 
     def get_item(self, item_id):
         self._login()
@@ -126,7 +131,7 @@ class TgtgClient:
             headers=self.headers,
             json={"user_id": self.user_id},
         )
-        try:
+        if response.status_code == HTTPStatus.OK:
             return response.json()
-        except Exception:
-            raise TgtgAPIError(response.content)
+        else:
+            raise TgtgAPIError(response.status_code, response.content)
