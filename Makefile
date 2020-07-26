@@ -10,3 +10,6 @@ lint:
 	python3 -m poetry run black . --check
 	python3 -m poetry run isort --check
 	python3 -m poetry run flake8
+
+publish:
+	python3 -m poetry publish --build

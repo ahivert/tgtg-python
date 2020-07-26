@@ -32,7 +32,7 @@ class TestLoginRequired:
         client = TgtgClient(
             email=os.environ["TGTG_EMAIL"], password=os.environ["TGTG_PASSWORD"]
         )
-        item_id = "36684i2621241"
+        item_id = "36684"
         data = client.get_item(item_id)
 
         assert all(prop in data for prop in GLOBAL_PROPERTIES)
