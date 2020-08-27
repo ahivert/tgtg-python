@@ -25,7 +25,7 @@ class TestLoginRequired:
         data = client.get_items(
             favorites_only=False, radius=10, latitude=48.126, longitude=-1.723
         )
-        assert len(data) == 100
+        assert len(data) == 20
         assert all(prop in data[0] for prop in GLOBAL_PROPERTIES)
 
     def test_get_one_item(self):
