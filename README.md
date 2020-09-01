@@ -11,8 +11,9 @@ Python version: 3.6, 3.7, 3.8
 Handle:
 - login (`/api/auth/v1/loginByEmail`)
 - list stores (`/api/item/`)
-- get a store (`/api/item/<pk>`)
+- get a store (`/api/item/<id>`)
 - get all stores (`/api/map/v1/listAllBusinessMap`)
+- set favorite (`/api/item/<id>/setFavorite`)
 
 Used by:
 - https://tgtg-notifier.com

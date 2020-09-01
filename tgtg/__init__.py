@@ -63,7 +63,6 @@ class TgtgClient:
     def _login(self):
         if self.already_logged:
             return
-        print(self.email, self.password)
         if not self.email or not self.password:
             raise ValueError(
                 "You must fill email and password or access_token and user_id"
@@ -143,6 +142,18 @@ class TgtgClient:
             urljoin(self.item_url, str(item_id)),
             headers=self.headers,
             json={"user_id": self.user_id, "origin": None},
+        )
+        if response.status_code == HTTPStatus.OK:
+            return response.json()
+        else:
+            raise TgtgAPIError(response.status_code, response.content)
+
+    def set_favorite(self, item_id, bool_value):
+        self._login()
+        response = requests.post(
+            urljoin(self.item_url, f"{item_id}/setFavorite"),
+            headers=self.headers,
+            json={"is_favorite": bool_value},
         )
         if response.status_code == HTTPStatus.OK:
             return response.json()
