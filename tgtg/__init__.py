@@ -148,12 +148,12 @@ class TgtgClient:
         else:
             raise TgtgAPIError(response.status_code, response.content)
 
-    def set_favorite(self, item_id, bool_value):
+    def set_favorite(self, item_id, is_favorite):
         self._login()
         response = requests.post(
             urljoin(self.item_url, f"{item_id}/setFavorite"),
             headers=self.headers,
-            json={"is_favorite": bool_value},
+            json={"is_favorite": is_favorite},
         )
         if response.status_code == HTTPStatus.OK:
             return response.json()
