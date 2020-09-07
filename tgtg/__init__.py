@@ -155,7 +155,5 @@ class TgtgClient:
             headers=self.headers,
             json={"is_favorite": is_favorite},
         )
-        if response.status_code == HTTPStatus.OK:
-            return response.json()
-        else:
+        if response.status_code != HTTPStatus.OK:
             raise TgtgAPIError(response.status_code, response.content)
