@@ -55,3 +55,16 @@ def test_get_item_success():
     client = TgtgClient(access_token="an_access_token", user_id=1234)
     assert client.get_item(1) == {}
     assert len(responses.calls) == 1
+
+
+@responses.activate
+def test_set_favorite():
+    responses.add(
+        responses.POST,
+        urljoin(BASE_URL, API_ITEM_ENDPOINT) + "1/setFavorite",
+        json={},
+        status=200,
+    )
+    client = TgtgClient(access_token="an_access_token", user_id=1234)
+    assert client.set_favorite(1, True) is None
+    assert len(responses.calls) == 1

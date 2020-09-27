@@ -11,8 +11,9 @@ Python version: 3.6, 3.7, 3.8
 Handle:
 - login (`/api/auth/v1/loginByEmail`)
 - list stores (`/api/item/`)
-- get a store (`/api/item/<pk>`)
+- get a store (`/api/item/:id`)
 - get all stores (`/api/map/v1/listAllBusinessMap`)
+- set favorite (`/api/item/:id/setFavorite`)
 
 Used by:
 - https://tgtg-notifier.com
@@ -48,10 +49,6 @@ client.get_items(
 
 # Or get an item
 client.get_item(1234)
-
-# get all items **without** auth (with limited fields, used by the map in the app)
-client = TgtgClient()
-client.get_all_business()
 
 ```
 

@@ -7,12 +7,6 @@ from tgtg import TgtgClient
 from .constants import GLOBAL_PROPERTIES, ITEM_PROPERTIES, STORE_PROPERTIES
 
 
-def test_get_all_business_auth_not_required():
-    client = TgtgClient()
-    data = client.get_all_business()
-    assert len(data) > 0
-
-
 @pytest.mark.skipif(
     not (os.environ.get("TGTG_EMAIL") or os.environ.get("TGTG_PASSWORD")),
     reason="Env var `TGTG_EMAIL` and `TGTG_PASSWORD` are absent",
@@ -25,7 +19,7 @@ class TestLoginRequired:
         data = client.get_items(
             favorites_only=False, radius=10, latitude=48.126, longitude=-1.723
         )
-        assert len(data) == 100
+        assert len(data) == 20
         assert all(prop in data[0] for prop in GLOBAL_PROPERTIES)
 
     def test_get_one_item(self):
