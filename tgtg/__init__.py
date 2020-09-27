@@ -84,13 +84,6 @@ class TgtgClient:
         else:
             raise TgtgLoginError(response.status_code, response.content)
 
-    def get_all_business(self):
-        response = requests.post(self.all_business_url, headers=self.headers)
-        if response.status_code == HTTPStatus.OK:
-            return response.json()["info"]
-        else:
-            raise TgtgAPIError(response.status_code, response.content)
-
     def get_items(
         self,
         *,

@@ -50,10 +50,6 @@ client.get_items(
 # Or get an item
 client.get_item(1234)
 
-# get all items **without** auth (with limited fields, used by the map in the app)
-client = TgtgClient()
-client.get_all_business()
-
 ```
 
 ## Developers
