@@ -57,14 +57,14 @@ client.get_all_business()
 
 ## Developers
 
-This project use poetry so you will need to install locally poetry to use following
+This project uses poetry so you will need to install poetry locally to use following
 commands.
 ```
 pip install poetry --user
 poetry install
 ```
 
-This project use [black](https://github.com/psf/black) to format all the code,
+This project uses [black](https://github.com/psf/black) to format all the code,
 [isort](https://github.com/timothycrosley/isort) to sort all imports and
 lint is done by [flake8](https://github.com/PyCQA/flake8).
 
