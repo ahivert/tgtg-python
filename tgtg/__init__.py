@@ -28,6 +28,7 @@ class TgtgClient:
         user_id=None,
         user_agent=None,
         language="en-UK",
+        proxies=None,
     ):
         self.base_url = url
         self.email = email
@@ -36,6 +37,7 @@ class TgtgClient:
         self.user_id = user_id
         self.user_agent = user_agent if user_agent else random.choice(USER_AGENTS)
         self.language = language
+        self.proxies = proxies
 
     @property
     def item_url(self):
@@ -76,6 +78,7 @@ class TgtgClient:
                 "email": self.email,
                 "password": self.password,
             },
+            proxies=self.proxies,
         )
         if response.status_code == HTTPStatus.OK:
             login_response = json.loads(response.content)
@@ -123,7 +126,9 @@ class TgtgClient:
             "hidden_only": hidden_only,
             "we_care_only": we_care_only,
         }
-        response = requests.post(self.item_url, headers=self.headers, json=data)
+        response = requests.post(
+            self.item_url, headers=self.headers, json=data, proxies=self.proxies
+        )
         if response.status_code == HTTPStatus.OK:
             return response.json()["items"]
         else:
@@ -135,6 +140,7 @@ class TgtgClient:
             urljoin(self.item_url, str(item_id)),
             headers=self.headers,
             json={"user_id": self.user_id, "origin": None},
+            proxies=self.proxies,
         )
         if response.status_code == HTTPStatus.OK:
             return response.json()
@@ -147,6 +153,7 @@ class TgtgClient:
             urljoin(self.item_url, f"{item_id}/setFavorite"),
             headers=self.headers,
             json={"is_favorite": is_favorite},
+            proxies=self.proxies,
         )
         if response.status_code != HTTPStatus.OK:
             raise TgtgAPIError(response.status_code, response.content)
