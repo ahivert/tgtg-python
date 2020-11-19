@@ -1,6 +1,6 @@
 style:
 	python3 -m poetry run black .
-	python3 -m poetry run isort -y
+	python3 -m poetry run isort .
 	python3 -m poetry run flake8
 
 test:
@@ -8,7 +8,7 @@ test:
 
 lint:
 	python3 -m poetry run black . --check
-	python3 -m poetry run isort --check
+	python3 -m poetry run isort . --check
 	python3 -m poetry run flake8
 
 publish:
