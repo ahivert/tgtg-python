@@ -29,6 +29,7 @@ class TgtgClient:
         user_agent=None,
         language="en-UK",
         proxies=None,
+        timeout=None,
     ):
         self.base_url = url
         self.email = email
@@ -38,6 +39,7 @@ class TgtgClient:
         self.user_agent = user_agent if user_agent else random.choice(USER_AGENTS)
         self.language = language
         self.proxies = proxies
+        self.timeout = timeout
 
     @property
     def item_url(self):
@@ -79,6 +81,7 @@ class TgtgClient:
                 "password": self.password,
             },
             proxies=self.proxies,
+            timeout=self.timeout,
         )
         if response.status_code == HTTPStatus.OK:
             login_response = json.loads(response.content)
@@ -127,7 +130,11 @@ class TgtgClient:
             "we_care_only": we_care_only,
         }
         response = requests.post(
-            self.item_url, headers=self.headers, json=data, proxies=self.proxies
+            self.item_url,
+            headers=self.headers,
+            json=data,
+            proxies=self.proxies,
+            timeout=self.timeout,
         )
         if response.status_code == HTTPStatus.OK:
             return response.json()["items"]
@@ -141,6 +148,7 @@ class TgtgClient:
             headers=self.headers,
             json={"user_id": self.user_id, "origin": None},
             proxies=self.proxies,
+            timeout=self.timeout,
         )
         if response.status_code == HTTPStatus.OK:
             return response.json()
@@ -154,6 +162,7 @@ class TgtgClient:
             headers=self.headers,
             json={"is_favorite": is_favorite},
             proxies=self.proxies,
+            timeout=self.timeout,
         )
         if response.status_code != HTTPStatus.OK:
             raise TgtgAPIError(response.status_code, response.content)
