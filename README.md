@@ -61,13 +61,13 @@ pip install poetry --user
 poetry install
 ```
 
-This project uses [black](https://github.com/psf/black) to format all the code,
-[isort](https://github.com/timothycrosley/isort) to sort all imports and
-lint is done by [flake8](https://github.com/PyCQA/flake8).
+This project uses [pre-commit](https://pre-commit.com/) to format/check all the
+code before each commit automatically.
 
-Just run this command to format automatically all the code you wrote:
+Just run this command to :
 ```
-make style
+pip install pre-commit --user
+pre-commit install
 ```
 
 Run this command to run all tests:
