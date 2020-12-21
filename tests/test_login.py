@@ -74,7 +74,10 @@ def test_refresh_token_after_some_time(login_response):
 
 def test_refresh_token_fail(login_response):
     responses.add(
-        responses.POST, urljoin(BASE_URL, REFRESH_ENDPOINT), json={}, status=400,
+        responses.POST,
+        urljoin(BASE_URL, REFRESH_ENDPOINT),
+        json={},
+        status=400,
     )
     client = TgtgClient(email="test@test.com", password="test")
     client._login()
