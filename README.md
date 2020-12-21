@@ -63,8 +63,6 @@ poetry install
 
 This project uses [pre-commit](https://pre-commit.com/) to format/check all the
 code before each commit automatically.
-
-Just run this command to :
 ```
 pip install pre-commit --user
 pre-commit install
