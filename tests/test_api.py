@@ -11,6 +11,7 @@ from .constants import GLOBAL_PROPERTIES, ITEM_PROPERTIES, STORE_PROPERTIES
     not (os.environ.get("TGTG_EMAIL") or os.environ.get("TGTG_PASSWORD")),
     reason="Env var `TGTG_EMAIL` and `TGTG_PASSWORD` are absent",
 )
+@pytest.mark.withoutresponses
 class TestLoginRequired:
     def test_get_items(self):
         client = TgtgClient(

@@ -1,5 +1,6 @@
-import json
+import datetime
 import random
+import warnings
 from http import HTTPStatus
 from urllib.parse import urljoin
 
@@ -10,12 +11,14 @@ from .exceptions import TgtgAPIError, TgtgLoginError
 BASE_URL = "https://apptoogoodtogo.com/api/"
 API_ITEM_ENDPOINT = "item/v7/"
 LOGIN_ENDPOINT = "auth/v1/loginByEmail"
+REFRESH_ENDPOINT = "auth/v1/token/refresh"
 ALL_BUSINESS_ENDPOINT = "map/v1/listAllBusinessMap"
 USER_AGENTS = [
     "TGTG/20.10.2 Dalvik/2.1.0 (Linux; U; Android 6.0.1; Nexus 5 Build/M4B30Z)",
     "TGTG/20.10.2 Dalvik/2.1.0 (Linux; U; Android 7.0; SM-G935F Build/NRD90M)",
     "TGTG/20.10.2 Dalvik/2.1.0 (Linux; Android 6.0.1; SM-G920V Build/MMB29K)",
 ]
+DEFAULT_ACCESS_TOKEN_LIFETIME = 3600 * 4  # 4 hours
 
 
 class TgtgClient:
@@ -30,65 +33,92 @@ class TgtgClient:
         language="en-UK",
         proxies=None,
         timeout=None,
+        access_token_lifetime=DEFAULT_ACCESS_TOKEN_LIFETIME,
     ):
         self.base_url = url
+
         self.email = email
         self.password = password
+
         self.access_token = access_token
+        if self.access_token is not None:
+            warnings.warn("'access_token' is deprecated; use 'email' and 'password'")
+        self.refresh_token = None
+        self.last_time_token_refreshed = None
+        self.access_token_lifetime = access_token_lifetime
+
         self.user_id = user_id
+        if self.user_id is not None:
+            warnings.warn("'user_id' is deprecated; use 'email' and 'password'")
         self.user_agent = user_agent if user_agent else random.choice(USER_AGENTS)
         self.language = language
         self.proxies = proxies
         self.timeout = timeout
 
-    @property
-    def item_url(self):
-        return urljoin(self.base_url, API_ITEM_ENDPOINT)
+    def _get_url(self, path):
+        return urljoin(self.base_url, path)
 
     @property
-    def all_business_url(self):
-        return urljoin(self.base_url, ALL_BUSINESS_ENDPOINT)
-
-    @property
-    def login_url(self):
-        return urljoin(self.base_url, LOGIN_ENDPOINT)
-
-    @property
-    def headers(self):
+    def _headers(self):
         headers = {"user-agent": self.user_agent, "accept-language": self.language}
         if self.access_token:
             headers["authorization"] = f"Bearer {self.access_token}"
         return headers
 
     @property
-    def already_logged(self):
+    def _already_logged(self):
         return self.access_token and self.user_id
 
-    def _login(self):
-        if self.already_logged:
+    def _refresh_token(self):
+        if (
+            self.last_time_token_refreshed is None
+            or (self.last_time_token_refreshed - datetime.datetime.now()).seconds
+            <= self.access_token_lifetime
+        ):
             return
-        if not self.email or not self.password:
-            raise ValueError(
-                "You must fill email and password or access_token and user_id"
-            )
 
         response = requests.post(
-            self.login_url,
-            headers=self.headers,
-            json={
-                "device_type": "ANDROID",
-                "email": self.email,
-                "password": self.password,
-            },
+            self._get_url(REFRESH_ENDPOINT),
+            headers=self._headers,
+            json={"refresh_token": self.refresh_token},
             proxies=self.proxies,
             timeout=self.timeout,
         )
         if response.status_code == HTTPStatus.OK:
-            login_response = json.loads(response.content)
-            self.access_token = login_response["access_token"]
-            self.user_id = login_response["startup_data"]["user"]["user_id"]
+            self.access_token = response.json()["access_token"]
+            self.refresh_token = response.json()["refresh_token"]
+            self.last_time_token_refreshed = datetime.datetime.now()
         else:
-            raise TgtgLoginError(response.status_code, response.content)
+            raise TgtgAPIError(response.status_code, response.content)
+
+    def _login(self):
+        if self._already_logged:
+            self._refresh_token()
+        else:
+            if not self.email or not self.password:
+                raise ValueError(
+                    "You must fill email and password or access_token and user_id"
+                )
+
+            response = requests.post(
+                self._get_url(LOGIN_ENDPOINT),
+                headers=self._headers,
+                json={
+                    "device_type": "ANDROID",
+                    "email": self.email,
+                    "password": self.password,
+                },
+                proxies=self.proxies,
+                timeout=self.timeout,
+            )
+            if response.status_code == HTTPStatus.OK:
+                login_response = response.json()
+                self.access_token = login_response["access_token"]
+                self.refresh_token = login_response["refresh_token"]
+                self.last_time_token_refreshed = datetime.datetime.now()
+                self.user_id = login_response["startup_data"]["user"]["user_id"]
+            else:
+                raise TgtgLoginError(response.status_code, response.content)
 
     def get_items(
         self,
@@ -130,8 +160,8 @@ class TgtgClient:
             "we_care_only": we_care_only,
         }
         response = requests.post(
-            self.item_url,
-            headers=self.headers,
+            self._get_url(API_ITEM_ENDPOINT),
+            headers=self._headers,
             json=data,
             proxies=self.proxies,
             timeout=self.timeout,
@@ -144,8 +174,8 @@ class TgtgClient:
     def get_item(self, item_id):
         self._login()
         response = requests.post(
-            urljoin(self.item_url, str(item_id)),
-            headers=self.headers,
+            urljoin(self._get_url(API_ITEM_ENDPOINT), str(item_id)),
+            headers=self._headers,
             json={"user_id": self.user_id, "origin": None},
             proxies=self.proxies,
             timeout=self.timeout,
@@ -158,8 +188,8 @@ class TgtgClient:
     def set_favorite(self, item_id, is_favorite):
         self._login()
         response = requests.post(
-            urljoin(self.item_url, f"{item_id}/setFavorite"),
-            headers=self.headers,
+            urljoin(self._get_url(API_ITEM_ENDPOINT), f"{item_id}/setFavorite"),
+            headers=self._headers,
             json={"is_favorite": is_favorite},
             proxies=self.proxies,
             timeout=self.timeout,

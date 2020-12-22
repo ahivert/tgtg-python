@@ -7,21 +7,22 @@ from tgtg import API_ITEM_ENDPOINT, BASE_URL, TgtgClient
 from tgtg.exceptions import TgtgAPIError
 
 
-@responses.activate
-def test_get_items_success():
+def test_get_items_success(login_response):
     responses.add(
         responses.POST,
         urljoin(BASE_URL, API_ITEM_ENDPOINT),
         json={"items": []},
         status=200,
     )
-    client = TgtgClient(access_token="an_access_token", user_id=1234)
+    client = TgtgClient(email="test@test.com", password="test")
     assert client.get_items() == []
-    assert len(responses.calls) == 1
+    assert (
+        len([call for call in responses.calls if API_ITEM_ENDPOINT in call.request.url])
+        == 1
+    )
 
 
-@responses.activate
-def test_get_items_custom_user_agent():
+def test_get_items_custom_user_agent(login_response):
     responses.add(
         responses.POST,
         urljoin(BASE_URL, API_ITEM_ENDPOINT),
@@ -30,41 +31,47 @@ def test_get_items_custom_user_agent():
     )
     custom_user_agent = "test"
     client = TgtgClient(
-        access_token="an_access_token", user_id=1234, user_agent=custom_user_agent
+        email="test@test.com", password="test", user_agent=custom_user_agent
     )
     client.get_items()
-    assert len(responses.calls) == 1
+    assert (
+        len([call for call in responses.calls if API_ITEM_ENDPOINT in call.request.url])
+        == 1
+    )
     assert responses.calls[0].request.headers["user-agent"] == custom_user_agent
 
 
-@responses.activate
-def test_get_items_fail():
+def test_get_items_fail(login_response):
     responses.add(
         responses.POST, urljoin(BASE_URL, API_ITEM_ENDPOINT), json={}, status=400
     )
-    client = TgtgClient(access_token="an_access_token", user_id=1234)
+    client = TgtgClient(email="test@test.com", password="test")
     with pytest.raises(TgtgAPIError):
         client.get_items()
 
 
-@responses.activate
-def test_get_item_success():
+def test_get_item_success(login_response):
     responses.add(
         responses.POST, urljoin(BASE_URL, API_ITEM_ENDPOINT) + "1", json={}, status=200
     )
-    client = TgtgClient(access_token="an_access_token", user_id=1234)
+    client = TgtgClient(email="test@test.com", password="test")
     assert client.get_item(1) == {}
-    assert len(responses.calls) == 1
+    assert (
+        len([call for call in responses.calls if API_ITEM_ENDPOINT in call.request.url])
+        == 1
+    )
 
 
-@responses.activate
-def test_set_favorite():
+def test_set_favorite(login_response):
     responses.add(
         responses.POST,
         urljoin(BASE_URL, API_ITEM_ENDPOINT) + "1/setFavorite",
         json={},
         status=200,
     )
-    client = TgtgClient(access_token="an_access_token", user_id=1234)
+    client = TgtgClient(email="test@test.com", password="test")
     assert client.set_favorite(1, True) is None
-    assert len(responses.calls) == 1
+    assert (
+        len([call for call in responses.calls if API_ITEM_ENDPOINT in call.request.url])
+        == 1
+    )
