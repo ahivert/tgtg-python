@@ -21,7 +21,7 @@ responses = "^0.12.1"
 pytest-cov = "^2.11.1"
 pytest-responses = "^0.4.0"
 isort = "^5.7.0"
-freezegun = "^1.0.0"
+freezegun = "^1.1.0"
 
 [build-system]
 requires = ["poetry>=0.12"]
