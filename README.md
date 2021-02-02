@@ -13,6 +13,7 @@ Handle:
 - list stores (`/api/item/`)
 - get a store (`/api/item/:id`)
 - set favorite (`/api/item/:id/setFavorite`)
+- create an account (`auth/v2/signUpByEmail`)
 
 Used by:
 - https://tgtg-notifier.com
@@ -30,14 +31,9 @@ pip install tgtg
 ```python
 from tgtg import TgtgClient
 
-# login with email and password
-client = TgtgClient(email=your_email, password=your_password)
+client = TgtgClient(email="<your_email>", password="<your_password>")
 
-# or you can login with user_id and access_token
-# (you can retrieve them from client after logged with email and password)
-client = TgtgClient(access_token=your_access_token, user_id=your_user_id)
 ```
-
 ### Get items
 
 ```python
@@ -334,6 +330,16 @@ client.set_favorite(item_id=64346, is_favorite=True)
 
 # remove favorite
 client.set_favorite(item_id=64346, is_favorite=False)
+```
+
+### Create an account
+
+```python
+from tgtg import TgtgClient
+
+client = TgtgClient(email="test@test.com", password="password", name="name")
+
+# client is now ready to be used
 ```
 
 ## Developers
