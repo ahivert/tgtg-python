@@ -62,6 +62,15 @@ def test_get_item_success(login_response):
     )
 
 
+def test_get_item_fail(login_response):
+    responses.add(
+        responses.POST, urljoin(BASE_URL, API_ITEM_ENDPOINT) + "1", json={}, status=400
+    )
+    client = TgtgClient(email="test@test.com", password="test")
+    with pytest.raises(TgtgAPIError):
+        client.get_item(1)
+
+
 def test_set_favorite(login_response):
     responses.add(
         responses.POST,
@@ -75,3 +84,15 @@ def test_set_favorite(login_response):
         len([call for call in responses.calls if API_ITEM_ENDPOINT in call.request.url])
         == 1
     )
+
+
+def test_set_favorite_fail(login_response):
+    responses.add(
+        responses.POST,
+        urljoin(BASE_URL, API_ITEM_ENDPOINT) + "1/setFavorite",
+        json={},
+        status=400,
+    )
+    client = TgtgClient(email="test@test.com", password="test")
+    with pytest.raises(TgtgAPIError):
+        client.set_favorite(1, True)

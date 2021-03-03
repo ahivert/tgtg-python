@@ -111,3 +111,8 @@ def test_login_empty_email_fail():
 def test_login_empty_token_fail():
     with pytest.raises(ValueError):
         TgtgClient(user_id=1234)._login()
+
+
+def test_login_empty_user_id_fail():
+    with pytest.raises(ValueError):
+        TgtgClient(access_token="test_token")._login()
