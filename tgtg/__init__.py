@@ -67,12 +67,12 @@ class TgtgClient:
 
     @property
     def _already_logged(self):
-        return self.access_token and self.user_id
+        return bool(self.access_token and self.user_id)
 
     def _refresh_token(self):
         if (
-            self.last_time_token_refreshed is None
-            or (self.last_time_token_refreshed - datetime.datetime.now()).seconds
+            self.last_time_token_refreshed
+            and (datetime.datetime.now() - self.last_time_token_refreshed).seconds
             <= self.access_token_lifetime
         ):
             return
