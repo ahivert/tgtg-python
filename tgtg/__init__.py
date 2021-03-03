@@ -11,12 +11,13 @@ from .exceptions import TgtgAPIError, TgtgLoginError
 BASE_URL = "https://apptoogoodtogo.com/api/"
 API_ITEM_ENDPOINT = "item/v7/"
 LOGIN_ENDPOINT = "auth/v1/loginByEmail"
+SIGNUP_BY_EMAIL_ENDPOINT = "auth/v2/signUpByEmail"
 REFRESH_ENDPOINT = "auth/v1/token/refresh"
 ALL_BUSINESS_ENDPOINT = "map/v1/listAllBusinessMap"
 USER_AGENTS = [
-    "TGTG/20.10.2 Dalvik/2.1.0 (Linux; U; Android 6.0.1; Nexus 5 Build/M4B30Z)",
-    "TGTG/20.10.2 Dalvik/2.1.0 (Linux; U; Android 7.0; SM-G935F Build/NRD90M)",
-    "TGTG/20.10.2 Dalvik/2.1.0 (Linux; Android 6.0.1; SM-G920V Build/MMB29K)",
+    "TGTG/20.12.3 Dalvik/2.1.0 (Linux; U; Android 6.0.1; Nexus 5 Build/M4B30Z)",
+    "TGTG/20.12.3 Dalvik/2.1.0 (Linux; U; Android 7.0; SM-G935F Build/NRD90M)",
+    "TGTG/20.12.3 Dalvik/2.1.0 (Linux; Android 6.0.1; SM-G920V Build/MMB29K)",
 ]
 DEFAULT_ACCESS_TOKEN_LIFETIME = 3600 * 4  # 4 hours
 
@@ -195,4 +196,39 @@ class TgtgClient:
             timeout=self.timeout,
         )
         if response.status_code != HTTPStatus.OK:
+            raise TgtgAPIError(response.status_code, response.content)
+
+    def signup_by_email(
+        self,
+        *,
+        email,
+        password,
+        name,
+        country_id="GB",
+        device_type="ANDROID",
+        newsletter_opt_in=False,
+        push_notification_opt_in=True,
+    ):
+        response = requests.post(
+            self._get_url(SIGNUP_BY_EMAIL_ENDPOINT),
+            headers=self._headers,
+            json={
+                "country_id": country_id,
+                "device_type": device_type,
+                "email": email,
+                "name": name,
+                "newsletter_opt_in": newsletter_opt_in,
+                "password": password,
+                "push_notification_opt_in": push_notification_opt_in,
+            },
+            proxies=self.proxies,
+            timeout=self.timeout,
+        )
+        if response.status_code == HTTPStatus.OK:
+            self.access_token = response.json()["access_token"]
+            self.refresh_token = response.json()["refresh_token"]
+            self.last_time_token_refreshed = datetime.datetime.now()
+            self.user_id = response.json()["startup_data"]["user"]["user_id"]
+            return self
+        else:
             raise TgtgAPIError(response.status_code, response.content)
