@@ -1,8 +1,11 @@
 import datetime
+import logging
 import random
 import warnings
 from http import HTTPStatus
 from urllib.parse import urljoin
+import json
+from pathlib import Path
 
 import requests
 
@@ -35,6 +38,7 @@ class TgtgClient:
         proxies=None,
         timeout=None,
         access_token_lifetime=DEFAULT_ACCESS_TOKEN_LIFETIME,
+        token_file=None,
     ):
         self.base_url = url
 
@@ -47,6 +51,7 @@ class TgtgClient:
         self.refresh_token = None
         self.last_time_token_refreshed = None
         self.access_token_lifetime = access_token_lifetime
+        self.token_file = token_file
 
         self.user_id = user_id
         if self.user_id is not None:
@@ -55,6 +60,8 @@ class TgtgClient:
         self.language = language
         self.proxies = proxies
         self.timeout = timeout
+
+        self._load_token()
 
     def _get_url(self, path):
         return urljoin(self.base_url, path)
@@ -73,8 +80,7 @@ class TgtgClient:
     def _refresh_token(self):
         if (
             self.last_time_token_refreshed
-            and (datetime.datetime.now() - self.last_time_token_refreshed).seconds
-            <= self.access_token_lifetime
+            and (datetime.datetime.now() - self.last_time_token_refreshed).seconds <= self.access_token_lifetime
         ):
             return
 
@@ -89,6 +95,7 @@ class TgtgClient:
             self.access_token = response.json()["access_token"]
             self.refresh_token = response.json()["refresh_token"]
             self.last_time_token_refreshed = datetime.datetime.now()
+            self._save_token()
         else:
             raise TgtgAPIError(response.status_code, response.content)
 
@@ -97,9 +104,7 @@ class TgtgClient:
             self._refresh_token()
         else:
             if not self.email or not self.password:
-                raise ValueError(
-                    "You must fill email and password or access_token and user_id"
-                )
+                raise ValueError("You must fill email and password or access_token and user_id")
 
             response = requests.post(
                 self._get_url(LOGIN_ENDPOINT),
@@ -118,8 +123,35 @@ class TgtgClient:
                 self.refresh_token = login_response["refresh_token"]
                 self.last_time_token_refreshed = datetime.datetime.now()
                 self.user_id = login_response["startup_data"]["user"]["user_id"]
+                self._save_token()
             else:
                 raise TgtgLoginError(response.status_code, response.content)
+
+    def _save_token(self):
+        if self.token_file:
+            fp = Path(self.token_file)
+            json.dump(
+                {
+                    "user_id": self.user_id,
+                    "refresh_token": self.refresh_token,
+                },
+                fp.open("w"),
+            )
+            fp.chmod(0o600)
+
+    def _load_token(self):
+        if self.token_file:
+            try:
+                fp = Path(self.token_file)
+                t = json.load(fp.open("r"))
+                self.user_id = t["user_id"]
+                self.refresh_token = t["refresh_token"]
+                self._refresh_token()
+                logging.debug("reuse token: %r", self._already_logged)
+            except Exception as e:
+                logging.info(e)
+                self.refresh_token = None
+                self.last_time_token_refreshed = None
 
     def get_items(
         self,
@@ -229,6 +261,7 @@ class TgtgClient:
             self.refresh_token = response.json()["refresh_token"]
             self.last_time_token_refreshed = datetime.datetime.now()
             self.user_id = response.json()["startup_data"]["user"]["user_id"]
+            self._save_token()
             return self
         else:
             raise TgtgAPIError(response.status_code, response.content)
