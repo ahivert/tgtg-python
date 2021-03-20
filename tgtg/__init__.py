@@ -1,10 +1,10 @@
 import datetime
+import json
 import random
 import warnings
 from http import HTTPStatus
-from urllib.parse import urljoin
-import json
 from pathlib import Path
+from urllib.parse import urljoin
 
 import requests
 
@@ -79,7 +79,8 @@ class TgtgClient:
     def _refresh_token(self):
         if (
             self.last_time_token_refreshed
-            and (datetime.datetime.now() - self.last_time_token_refreshed).seconds <= self.access_token_lifetime
+            and (datetime.datetime.now() - self.last_time_token_refreshed).seconds
+            <= self.access_token_lifetime
         ):
             return
 
@@ -103,7 +104,9 @@ class TgtgClient:
             self._refresh_token()
         else:
             if not self.email or not self.password:
-                raise ValueError("You must fill email and password or access_token and user_id")
+                raise ValueError(
+                    "You must fill email and password or access_token and user_id"
+                )
 
             response = requests.post(
                 self._get_url(LOGIN_ENDPOINT),
