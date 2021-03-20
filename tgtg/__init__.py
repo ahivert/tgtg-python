@@ -1,5 +1,4 @@
 import datetime
-import logging
 import random
 import warnings
 from http import HTTPStatus
@@ -147,9 +146,7 @@ class TgtgClient:
                 self.user_id = t["user_id"]
                 self.refresh_token = t["refresh_token"]
                 self._refresh_token()
-                logging.debug("reuse token: %r", self._already_logged)
             except Exception as e:
-                logging.info(e)
                 self.refresh_token = None
                 self.last_time_token_refreshed = None
 
