@@ -116,3 +116,35 @@ def test_login_empty_token_fail():
 def test_login_empty_user_id_fail():
     with pytest.raises(ValueError):
         TgtgClient(access_token="test_token")._login()
+
+
+def test_login_with_missing_refresh_token():
+    with pytest.raises(Exception):
+        TgtgClient(
+            email="test@test.com", password="test", token_file="non_existant_file"
+        )._login()
+
+
+@pytest.fixture(scope="session")
+def image_file(tmpdir_factory):
+    fn = tmpdir_factory.mktemp("data").join("state")
+    open(fn, "w").write('{"user_id":1234,"refresh_token":"a_refresh_token"}')
+    return fn
+
+
+def test_login_with_refresh_token(image_file):
+    responses.add(
+        responses.POST,
+        urljoin(BASE_URL, REFRESH_ENDPOINT),
+        json={
+            "access_token": "an_access_token",
+            "refresh_token": "a_refresh_token",
+            "startup_data": {"user": {"user_id": 1234}},
+        },
+        status=200,
+    )
+    client = TgtgClient(email="test@test.com", password="test", token_file=image_file)
+
+    assert client.access_token == "an_access_token"
+    assert client.refresh_token == "a_refresh_token"
+    assert client.user_id == 1234
