@@ -149,7 +149,7 @@ class TgtgClient:
                 self.user_id = t["user_id"]
                 self.refresh_token = t["refresh_token"]
                 self._refresh_token()
-            except Exception as e:
+            except Exception:
                 self.refresh_token = None
                 self.last_time_token_refreshed = None
 
