@@ -14,7 +14,7 @@ requests = "2.25.1"
 profile = "black"
 
 [tool.poetry.dev-dependencies]
-flake8 = "^3.8.4"
+flake8 = "^3.9.0"
 black = "^20.8b1"
 pytest = "^6.2.2"
 responses = "^0.13.1"
