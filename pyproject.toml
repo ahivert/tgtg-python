@@ -20,7 +20,7 @@ pytest = "^6.2.2"
 responses = "^0.13.1"
 pytest-cov = "^2.11.1"
 pytest-responses = "^0.4.0"
-isort = "^5.7.0"
+isort = "^5.8.0"
 freezegun = "^1.1.0"
 
 [build-system]
