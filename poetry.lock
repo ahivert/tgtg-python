@@ -296,7 +296,7 @@ testing = ["fields", "hunter", "process-tests", "six", "pytest-xdist", "virtuale
 
 [[package]]
 name = "pytest-responses"
-version = "0.4.0"
+version = "0.5.0"
 description = "py.test integration for responses"
 category = "dev"
 optional = false
@@ -422,7 +422,7 @@ testing = ["pytest (>=3.5,!=3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.6"
-content-hash = "d687401550726bccba513056f8aa3e2a37458d677979864fe5babe7e03a7bb35"
+content-hash = "c994ca53c3c6011605b80a2562107fc7ee7d5c231f2c426f0344623dc44601f4"
 
 [metadata.files]
 appdirs = [
@@ -583,8 +583,7 @@ pytest-cov = [
     {file = "pytest_cov-2.12.1-py2.py3-none-any.whl", hash = "sha256:261bb9e47e65bd099c89c3edf92972865210c36813f80ede5277dceb77a4a62a"},
 ]
 pytest-responses = [
-    {file = "pytest-responses-0.4.0.tar.gz", hash = "sha256:cef8c360273842700733c7849b75219f425edc3f8e22704114778bde3e08e3f7"},
-    {file = "pytest_responses-0.4.0-py2.py3-none-any.whl", hash = "sha256:1943af2548687c2e1153722f1b2f4a7152d65006ac85508fec8132d3fd5d0c0d"},
+    {file = "pytest_responses-0.5.0-py2.py3-none-any.whl", hash = "sha256:6fffd7412294c8a01ccfec05ae51910db76aeb0df877c5fac16c64991cb465e6"},
 ]
 python-dateutil = [
     {file = "python-dateutil-2.8.1.tar.gz", hash = "sha256:73ebfe9dbf22e832286dafa60473e4cd239f8592f699aa5adaf10050e6e1823c"},
