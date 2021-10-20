@@ -33,7 +33,34 @@ from tgtg import TgtgClient
 
 client = TgtgClient(email="<your_email>", password="<your_password>")
 
+# or
+
+client = TgtgClient(access_token="<access_token>", refresh_token="<refresh_token>", user_id="<user_id>")
+
 ```
+
+### Retrieve tokens to avois login email
+
+Each time you build the client with email and password and then retrieve items,
+it will generate an email.
+To avoid that, you need to save tokens and then build the client from these tokens.
+
+```python
+from tgtg import TgtgClient
+
+client = TgtgClient(email="<your_email>", password="<your_password>")
+client.login()  # will generate the email
+
+# you can then retrieve tokens and save these value to be able to use it
+access_token = client.access_token
+refresh_token = client.refresh_token
+user_id = client.user_id
+
+client = TgtgClient(access_token=access_token, refresh_token=refresh_token, user_id=user_id)
+client.login()  # will NOT generate the email
+
+```
+
 ### Get items
 
 ```python
