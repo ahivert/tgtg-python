@@ -59,7 +59,11 @@ class TgtgClient:
 
     @property
     def _headers(self):
-        headers = {"user-agent": self.user_agent, "accept-language": self.language, "Accept-Encoding": "gzip"}
+        headers = {
+            "user-agent": self.user_agent,
+            "accept-language": self.language,
+            "Accept-Encoding": "gzip",
+        }
         if self.access_token:
             headers["authorization"] = f"Bearer {self.access_token}"
         return headers
