@@ -9,7 +9,7 @@ from .exceptions import TgtgAPIError, TgtgLoginError
 
 BASE_URL = "https://apptoogoodtogo.com/api/"
 API_ITEM_ENDPOINT = "item/v7/"
-LOGIN_ENDPOINT = "auth/v1/loginByEmail"
+LOGIN_ENDPOINT = "auth/v2/loginByEmail"
 SIGNUP_BY_EMAIL_ENDPOINT = "auth/v2/signUpByEmail"
 REFRESH_ENDPOINT = "auth/v1/token/refresh"
 ALL_BUSINESS_ENDPOINT = "map/v1/listAllBusinessMap"
@@ -59,7 +59,7 @@ class TgtgClient:
 
     @property
     def _headers(self):
-        headers = {"user-agent": self.user_agent, "accept-language": self.language}
+        headers = {"user-agent": self.user_agent, "accept-language": self.language, "Accept-Encoding": "gzip"}
         if self.access_token:
             headers["authorization"] = f"Bearer {self.access_token}"
         return headers
