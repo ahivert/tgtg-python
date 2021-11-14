@@ -39,7 +39,7 @@ client = TgtgClient(access_token="<access_token>", refresh_token="<refresh_token
 
 ```
 
-### Retrieve tokens to avois login email
+### Retrieve tokens to avoid login email
 
 Each time you build the client with email and password and then retrieve items,
 it will generate an email.
