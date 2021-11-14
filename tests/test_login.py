@@ -27,7 +27,7 @@ def test_login_with_email_password_success():
         status=200,
     )
     client = TgtgClient(email="test@test.com", password="test")
-    client._login()
+    client.login()
     assert client.access_token == "an_access_token"
     assert client.user_id == 1234
 
@@ -40,13 +40,31 @@ def test_login_with_bad_email_or_password_fail():
         status=403,
     )
     with pytest.raises(TgtgLoginError):
-        TgtgClient(email="test@test.com", password="test")._login()
+        TgtgClient(email="test@test.com", password="test").login()
+
+
+def test_login_with_tokens():
+    responses.add(
+        responses.POST,
+        urljoin(BASE_URL, REFRESH_ENDPOINT),
+        json={
+            "access_token": "test",
+            "refresh_token": "test_",
+        },
+        status=200,
+    )
+    client = TgtgClient(
+        access_token="access_token", refresh_token="refresh_token", user_id="user_id"
+    )
+    client.login()
+    assert client.access_token == "test"
+    assert client.refresh_token == "test_"
 
 
 def test_refresh_token_after_some_time(login_response):
     # login the client for the first time
     client = TgtgClient(email="test@test.com", password="test")
-    client._login()
+    client.login()
 
     new_access_token = "new_access_token"
     new_refresh_token = "new_refresh_token"
@@ -63,7 +81,7 @@ def test_refresh_token_after_some_time(login_response):
         datetime.datetime.now()
         + datetime.timedelta(seconds=DEFAULT_ACCESS_TOKEN_LIFETIME)
     ):
-        client._login()
+        client.login()
         assert client.access_token != new_access_token
         assert client.refresh_token != new_refresh_token
 
@@ -72,7 +90,7 @@ def test_refresh_token_after_some_time(login_response):
         datetime.datetime.now()
         + datetime.timedelta(seconds=DEFAULT_ACCESS_TOKEN_LIFETIME + 1)
     ):
-        client._login()
+        client.login()
         assert client.access_token == new_access_token
         assert client.refresh_token == new_refresh_token
 
@@ -85,7 +103,7 @@ def test_refresh_token_fail(login_response):
         status=400,
     )
     client = TgtgClient(email="test@test.com", password="test")
-    client._login()
+    client.login()
     old_access_token = client.access_token
     old_refresh_token = client.refresh_token
     with freeze_time(
@@ -93,26 +111,26 @@ def test_refresh_token_fail(login_response):
         + datetime.timedelta(seconds=DEFAULT_ACCESS_TOKEN_LIFETIME + 1)
     ):
         with pytest.raises(TgtgAPIError):
-            client._login()
+            client.login()
         assert old_access_token == client.access_token
         assert old_refresh_token == client.refresh_token
 
 
 def test_login_empty_fail():
-    with pytest.raises(ValueError):
-        TgtgClient()._login()
+    with pytest.raises(TypeError):
+        TgtgClient().login()
 
 
 def test_login_empty_email_fail():
-    with pytest.raises(ValueError):
-        TgtgClient(password="test")._login()
+    with pytest.raises(TypeError):
+        TgtgClient(password="test").login()
 
 
 def test_login_empty_token_fail():
-    with pytest.raises(ValueError):
-        TgtgClient(user_id=1234)._login()
+    with pytest.raises(TypeError):
+        TgtgClient(user_id=1234).login()
 
 
 def test_login_empty_user_id_fail():
-    with pytest.raises(ValueError):
-        TgtgClient(access_token="test_token")._login()
+    with pytest.raises(TypeError):
+        TgtgClient(access_token="test_token", refresh_token="test_refres_toekn").login()
