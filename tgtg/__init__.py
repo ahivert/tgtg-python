@@ -1,16 +1,18 @@
 import datetime
+import time
 import random
 from http import HTTPStatus
 from urllib.parse import urljoin
 
 import requests
 
-from .exceptions import TgtgAPIError, TgtgLoginError
+from .exceptions import TgtgAPIError, TgtgLoginError, TgtgPollingError
 
 BASE_URL = "https://apptoogoodtogo.com/api/"
 API_ITEM_ENDPOINT = "item/v7/"
 LOGIN_ENDPOINT = "auth/v2/loginByEmail"
-SIGNUP_BY_EMAIL_ENDPOINT = "auth/v2/signUpByEmail"
+AUTH_BY_EMAIL_ENDPOINT = "auth/v3/authByEmail"
+AUTH_POLLING_ENDPOINT = "auth/v3/authByRequestPollingId"
 REFRESH_ENDPOINT = "auth/v1/token/refresh"
 ALL_BUSINESS_ENDPOINT = "map/v1/listAllBusinessMap"
 USER_AGENTS = [
@@ -19,22 +21,23 @@ USER_AGENTS = [
     "TGTG/21.9.3 Dalvik/2.1.0 (Linux; Android 6.0.1; SM-G920V Build/MMB29K)",
 ]
 DEFAULT_ACCESS_TOKEN_LIFETIME = 3600 * 4  # 4 hours
+MAX_POLLING_TRIES = 1  # 2 Minutes
 
 
 class TgtgClient:
     def __init__(
-        self,
-        url=BASE_URL,
-        email=None,
-        password=None,
-        access_token=None,
-        refresh_token=None,
-        user_id=None,
-        user_agent=None,
-        language="en-UK",
-        proxies=None,
-        timeout=None,
-        access_token_lifetime=DEFAULT_ACCESS_TOKEN_LIFETIME,
+            self,
+            url=BASE_URL,
+            email=None,
+            password=None,
+            access_token=None,
+            refresh_token=None,
+            user_id=None,
+            user_agent=None,
+            language="en-UK",
+            proxies=None,
+            timeout=None,
+            access_token_lifetime=DEFAULT_ACCESS_TOKEN_LIFETIME,
     ):
 
         self.base_url = url
@@ -74,9 +77,9 @@ class TgtgClient:
 
     def _refresh_token(self):
         if (
-            self.last_time_token_refreshed
-            and (datetime.datetime.now() - self.last_time_token_refreshed).seconds
-            <= self.access_token_lifetime
+                self.last_time_token_refreshed
+                and (datetime.datetime.now() - self.last_time_token_refreshed).seconds
+                <= self.access_token_lifetime
         ):
             return
 
@@ -96,57 +99,84 @@ class TgtgClient:
 
     def login(self):
         if not (
-            self.password
-            and self.email
-            or self.access_token
-            and self.refresh_token
-            and self.user_id
+                self.email
+                or self.access_token
+                and self.refresh_token
+                and self.user_id
         ):
             raise TypeError(
-                "You must provide at least email and password or access_token, refresh_token and user_id"
+                "You must provide at least email or access_token, refresh_token and user_id"
             )
 
         if self._already_logged:
             self._refresh_token()
         else:
             response = requests.post(
-                self._get_url(LOGIN_ENDPOINT),
+                self._get_url(AUTH_BY_EMAIL_ENDPOINT),
                 headers=self._headers,
                 json={
                     "device_type": "ANDROID",
                     "email": self.email,
-                    "password": self.password,
                 },
                 proxies=self.proxies,
                 timeout=self.timeout,
             )
             if response.status_code == HTTPStatus.OK:
-                login_response = response.json()
-                self.access_token = login_response["access_token"]
-                self.refresh_token = login_response["refresh_token"]
-                self.last_time_token_refreshed = datetime.datetime.now()
-                self.user_id = login_response["startup_data"]["user"]["user_id"]
+                first_login_response = response.json()
+                polling_id = first_login_response["polling_id"]
+                polling_response_code = 202
+                i = 1
+
+                while polling_response_code == 202 and i <= MAX_POLLING_TRIES:
+                    response = requests.post(
+                        self._get_url(AUTH_POLLING_ENDPOINT),
+                        headers=self._headers,
+                        json={
+                            "device_type": "ANDROID",
+                            "email": self.email,
+                            "request_polling_id": polling_id
+                        },
+                        proxies=self.proxies,
+                        timeout=self.timeout,
+                    )
+                    polling_response_code = response.status_code
+                    if polling_response_code == 202:
+                        if response.status_code == 200:
+                            login_response = response.json()
+                            self.access_token = login_response["access_token"]
+                            self.refresh_token = login_response["refresh_token"]
+                            self.last_time_token_refreshed = datetime.datetime.now()
+                            self.user_id = login_response["startup_data"]["user"]["user_id"]
+                            break
+
+                        i += 1
+                        time.sleep(5)
+                    else:
+                        raise TgtgLoginError(response.status_code, response.content)
+
+                if i == MAX_POLLING_TRIES:
+                    raise TgtgPollingError("Max retries (2 Minutes) reached. Try again.")
             else:
                 raise TgtgLoginError(response.status_code, response.content)
 
     def get_items(
-        self,
-        *,
-        latitude=0.0,
-        longitude=0.0,
-        radius=21,
-        page_size=20,
-        page=1,
-        discover=False,
-        favorites_only=True,
-        item_categories=None,
-        diet_categories=None,
-        pickup_earliest=None,
-        pickup_latest=None,
-        search_phrase=None,
-        with_stock_only=False,
-        hidden_only=False,
-        we_care_only=False,
+            self,
+            *,
+            latitude=0.0,
+            longitude=0.0,
+            radius=21,
+            page_size=20,
+            page=1,
+            discover=False,
+            favorites_only=True,
+            item_categories=None,
+            diet_categories=None,
+            pickup_earliest=None,
+            pickup_latest=None,
+            search_phrase=None,
+            with_stock_only=False,
+            hidden_only=False,
+            we_care_only=False,
     ):
         self.login()
 
@@ -207,15 +237,15 @@ class TgtgClient:
             raise TgtgAPIError(response.status_code, response.content)
 
     def signup_by_email(
-        self,
-        *,
-        email,
-        password,
-        name,
-        country_id="GB",
-        device_type="ANDROID",
-        newsletter_opt_in=False,
-        push_notification_opt_in=True,
+            self,
+            *,
+            email,
+            password,
+            name,
+            country_id="GB",
+            device_type="ANDROID",
+            newsletter_opt_in=False,
+            push_notification_opt_in=True,
     ):
         response = requests.post(
             self._get_url(SIGNUP_BY_EMAIL_ENDPOINT),
