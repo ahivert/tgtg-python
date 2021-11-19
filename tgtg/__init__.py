@@ -21,7 +21,7 @@ USER_AGENTS = [
     "TGTG/21.9.3 Dalvik/2.1.0 (Linux; Android 6.0.1; SM-G920V Build/MMB29K)",
 ]
 DEFAULT_ACCESS_TOKEN_LIFETIME = 3600 * 4  # 4 hours
-MAX_POLLING_TRIES = 24  # 2 Minutes
+MAX_POLLING_TRIES = 1  # 2 Minutes
 
 
 class TgtgClient:
@@ -154,7 +154,7 @@ class TgtgClient:
                     else:
                         raise TgtgLoginError(response.status_code, response.content)
 
-                if i == MAX_POLLING_TRIES:
+                if i >= MAX_POLLING_TRIES:
                     raise TgtgPollingError("Max retries (2 Minutes) reached. Try again.")
             else:
                 raise TgtgLoginError(response.status_code, response.content)
