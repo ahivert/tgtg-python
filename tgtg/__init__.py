@@ -156,12 +156,18 @@ class TgtgClient:
                         i += 1
                         time.sleep(5)
                     else:
-                        raise TgtgLoginError(response.status_code, response.content)
+                        if response.status_code == 429:
+                            raise TgtgAPIError("429 - Too many requests. Try again later.")
+                        else:
+                            raise TgtgLoginError(response.status_code, response.content)
 
                 if i >= MAX_POLLING_TRIES:
                     raise TgtgPollingError("Max retries (2 Minutes) reached. Try again.")
             else:
-                raise TgtgLoginError(response.status_code, response.content)
+                if response.status_code == 429:
+                    raise TgtgAPIError("429 - Too many requests. Try again later.")
+                else:
+                    raise TgtgLoginError(response.status_code, response.content)
 
     def get_items(
             self,
