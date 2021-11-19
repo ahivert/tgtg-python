@@ -21,7 +21,7 @@ USER_AGENTS = [
     "TGTG/21.9.3 Dalvik/2.1.0 (Linux; Android 6.0.1; SM-G920V Build/MMB29K)",
 ]
 DEFAULT_ACCESS_TOKEN_LIFETIME = 3600 * 4  # 4 hours
-MAX_POLLING_TRIES = 1  # 2 Minutes
+MAX_POLLING_TRIES = 24  # 25 * 5 seconds = 2 minutes
 
 
 class TgtgClient:
@@ -123,6 +123,10 @@ class TgtgClient:
             )
             if response.status_code == HTTPStatus.OK:
                 first_login_response = response.json()
+
+                if first_login_response["state"] == "TERMS":
+                    raise TgtgPollingError("Please accept terms first, validate your email and then retry!")
+
                 polling_id = first_login_response["polling_id"]
                 polling_response_code = 202
                 i = 1
