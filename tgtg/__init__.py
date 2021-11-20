@@ -128,47 +128,50 @@ class TgtgClient:
                 if first_login_response["state"] == "TERMS":
                     raise TgtgPollingError("Please accept terms first, validate your email and then retry!")
 
-                polling_id = first_login_response["polling_id"]
-                polling_response_code = 202
-                i = 1
+                self.start_polling(first_login_response["polling_id"])
 
-                while polling_response_code == 202 and i <= MAX_POLLING_TRIES:
-                    response = requests.post(
-                        self._get_url(AUTH_POLLING_ENDPOINT),
-                        headers=self._headers,
-                        json={
-                            "device_type": "ANDROID",
-                            "email": self.email,
-                            "request_polling_id": polling_id
-                        },
-                        proxies=self.proxies,
-                        timeout=self.timeout,
-                    )
-                    polling_response_code = response.status_code
-                    if polling_response_code == 202 or polling_response_code == 200:
-                        if response.status_code == 200:
-                            login_response = response.json()
-                            self.access_token = login_response["access_token"]
-                            self.refresh_token = login_response["refresh_token"]
-                            self.last_time_token_refreshed = datetime.datetime.now()
-                            self.user_id = login_response["startup_data"]["user"]["user_id"]
-                            break
-
-                        i += 1
-                        time.sleep(5)
-                    else:
-                        if response.status_code == 429:
-                            raise TgtgAPIError("429 - Too many requests. Try again later.")
-                        else:
-                            raise TgtgLoginError(response.status_code, response.content)
-
-                if i >= MAX_POLLING_TRIES:
-                    raise TgtgPollingError("Max retries (2 Minutes) reached. Try again.")
             else:
                 if response.status_code == 429:
                     raise TgtgAPIError("429 - Too many requests. Try again later.")
                 else:
                     raise TgtgLoginError(response.status_code, response.content)
+
+    def start_polling(self, polling_id):
+        polling_response_code = 202
+        i = 1
+
+        while polling_response_code == 202 and i <= MAX_POLLING_TRIES:
+            response = requests.post(
+                self._get_url(AUTH_POLLING_ENDPOINT),
+                headers=self._headers,
+                json={
+                    "device_type": "ANDROID",
+                    "email": self.email,
+                    "request_polling_id": polling_id
+                },
+                proxies=self.proxies,
+                timeout=self.timeout,
+            )
+            polling_response_code = response.status_code
+            if polling_response_code == 202 or polling_response_code == 200:
+                if response.status_code == 200:
+                    login_response = response.json()
+                    self.access_token = login_response["access_token"]
+                    self.refresh_token = login_response["refresh_token"]
+                    self.last_time_token_refreshed = datetime.datetime.now()
+                    self.user_id = login_response["startup_data"]["user"]["user_id"]
+                    break
+
+                i += 1
+                time.sleep(5)
+            else:
+                if response.status_code == 429:
+                    raise TgtgAPIError("429 - Too many requests. Try again later.")
+                else:
+                    raise TgtgLoginError(response.status_code, response.content)
+
+        if i >= MAX_POLLING_TRIES:
+            raise TgtgPollingError("Max retries (2 Minutes) reached. Try again.")
 
     def get_items(
             self,
