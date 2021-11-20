@@ -13,6 +13,7 @@ API_ITEM_ENDPOINT = "item/v7/"
 LOGIN_ENDPOINT = "auth/v2/loginByEmail"
 AUTH_BY_EMAIL_ENDPOINT = "auth/v3/authByEmail"
 AUTH_POLLING_ENDPOINT = "auth/v3/authByRequestPollingId"
+SIGNUP_BY_EMAIL_ENDPOINT = "auth/v2/signUpByEmail"
 REFRESH_ENDPOINT = "auth/v1/token/refresh"
 ALL_BUSINESS_ENDPOINT = "map/v1/listAllBusinessMap"
 USER_AGENTS = [
@@ -21,7 +22,7 @@ USER_AGENTS = [
     "TGTG/21.9.3 Dalvik/2.1.0 (Linux; Android 6.0.1; SM-G920V Build/MMB29K)",
 ]
 DEFAULT_ACCESS_TOKEN_LIFETIME = 3600 * 4  # 4 hours
-MAX_POLLING_TRIES = 24  # 25 * 5 seconds = 2 minutes
+MAX_POLLING_TRIES = 24  # 24 * 5 seconds = 2 minutes
 
 
 class TgtgClient:
