@@ -137,7 +137,7 @@ class TgtgClient:
                     raise TgtgLoginError(response.status_code, response.content)
 
     def start_polling(self, polling_id):
-        polling_response_code = 202
+        polling_response_code = HTTPStatus.ACCEPTED
         i = 1
 
         while polling_response_code == 202 and i <= MAX_POLLING_TRIES:
