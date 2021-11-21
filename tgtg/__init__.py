@@ -154,7 +154,7 @@ class TgtgClient:
             )
             polling_response_code = response.status_code
             if polling_response_code in (HTTPStatus.ACCEPTED, HTTPStatus.OK):
-                if response.status_code == 200:
+                if response.status_code == HTTPStatus.OK:
                     login_response = response.json()
                     self.access_token = login_response["access_token"]
                     self.refresh_token = login_response["refresh_token"]
