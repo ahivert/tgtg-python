@@ -153,7 +153,7 @@ class TgtgClient:
                 timeout=self.timeout,
             )
             polling_response_code = response.status_code
-            if polling_response_code == 202 or polling_response_code == 200:
+            if polling_response_code in (HTTPStatus.ACCEPTED, HTTPStatus.OK):
                 if response.status_code == 200:
                     login_response = response.json()
                     self.access_token = login_response["access_token"]
