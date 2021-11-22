@@ -134,7 +134,6 @@ class TgtgClient:
 
     def start_polling(self, polling_id):
         retry_index = 0
-
         for retry_index in range(MAX_POLLING_TRIES):
             response = requests.post(
                 self._get_url(AUTH_POLLING_ENDPOINT),
@@ -162,8 +161,12 @@ class TgtgClient:
                     raise TgtgAPIError("429 - Too many requests. Try again later.")
                 else:
                     raise TgtgLoginError(response.status_code, response.content)
-        if retry_index >= MAX_POLLING_TRIES:
-            raise TgtgPollingError("Max retries (2 Minutes) reached. Try again.")
+        if retry_index + 1 >= MAX_POLLING_TRIES:
+            raise TgtgPollingError(
+                "Max retries ("
+                + str(MAX_POLLING_TRIES * POLLING_WAIT_TIME)
+                + " Minutes) reached. Try again."
+            )
 
     def get_items(
         self,
