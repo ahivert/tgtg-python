@@ -4,3 +4,7 @@ class TgtgLoginError(Exception):
 
 class TgtgAPIError(Exception):
     pass
+
+
+class TgtgPollingError(Exception):
+    pass
