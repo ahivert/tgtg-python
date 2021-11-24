@@ -9,7 +9,7 @@ Python client that help you to talk with [TooGoodToGo](https://toogoodtogo.com) 
 Python version: 3.6, 3.7, 3.8, 3.9
 
 Handle:
-- login (`/api/auth/v1/loginByEmail`)
+- login (`/api/auth/v3/authByEmail`)
 - list stores (`/api/item/`)
 - get a store (`/api/item/:id`)
 - set favorite (`/api/item/:id/setFavorite`)
@@ -26,38 +26,38 @@ pip install tgtg
 
 ## Use it
 
-### Build the client
+### Retrieve tokens
+
+Build the client with your email
 
 ```python
 from tgtg import TgtgClient
 
-client = TgtgClient(email="<your_email>", password="<your_password>")
-
-# or
-
-client = TgtgClient(access_token="<access_token>", refresh_token="<refresh_token>", user_id="<user_id>")
-
+client = TgtgClient(email="<your_email>")
+client.get_credentials()
 ```
 
-### Retrieve tokens to avoid login email
+You should receive an email from tgtg. 
+The will wait until you validate the login by clicking the link inside the email.
 
-Each time you build the client with email and password and then retrieve items,
-it will generate an email.
-To avoid that, you need to save tokens and then build the client from these tokens.
+Once you clicked the link in the email, the client will print you tokens
+
+```python
+{
+    'access_token': '<your_access_token>',
+    'refresh_token': '<your_refresh_token>',
+    'user_id': '<your_user_id>',
+}
+```
+
+
+
+### Build the client from tokens
 
 ```python
 from tgtg import TgtgClient
 
-client = TgtgClient(email="<your_email>", password="<your_password>")
-client.login()  # will generate the email
-
-# you can then retrieve tokens and save these value to be able to use it
-access_token = client.access_token
-refresh_token = client.refresh_token
-user_id = client.user_id
-
-client = TgtgClient(access_token=access_token, refresh_token=refresh_token, user_id=user_id)
-client.login()  # will NOT generate the email
+client = TgtgClient(access_token="<access_token>", refresh_token="<refresh_token>", user_id="<user_id>")
 
 ```
 
