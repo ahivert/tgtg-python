@@ -5,42 +5,10 @@ import pytest
 import responses
 from freezegun import freeze_time
 
-from tgtg import (
-    BASE_URL,
-    DEFAULT_ACCESS_TOKEN_LIFETIME,
-    LOGIN_ENDPOINT,
-    REFRESH_ENDPOINT,
-    TgtgClient,
-)
-from tgtg.exceptions import TgtgAPIError, TgtgLoginError
+from tgtg import BASE_URL, DEFAULT_ACCESS_TOKEN_LIFETIME, REFRESH_ENDPOINT, TgtgClient
+from tgtg.exceptions import TgtgAPIError
 
-
-def test_login_with_email_password_success():
-    responses.add(
-        responses.POST,
-        urljoin(BASE_URL, LOGIN_ENDPOINT),
-        json={
-            "access_token": "an_access_token",
-            "refresh_token": "a_refresh_token",
-            "startup_data": {"user": {"user_id": 1234}},
-        },
-        status=200,
-    )
-    client = TgtgClient(email="test@test.com", password="test")
-    client.login()
-    assert client.access_token == "an_access_token"
-    assert client.user_id == 1234
-
-
-def test_login_with_bad_email_or_password_fail():
-    responses.add(
-        responses.POST,
-        urljoin(BASE_URL, LOGIN_ENDPOINT),
-        json={"errors": [{"code": "FAILED LOGIN"}]},
-        status=403,
-    )
-    with pytest.raises(TgtgLoginError):
-        TgtgClient(email="test@test.com", password="test").login()
+from .constants import tgtg_client_fake_tokens
 
 
 def test_login_with_tokens():
@@ -53,23 +21,20 @@ def test_login_with_tokens():
         },
         status=200,
     )
-    client = TgtgClient(
-        access_token="access_token", refresh_token="refresh_token", user_id="user_id"
-    )
+    client = TgtgClient(**tgtg_client_fake_tokens)
     client.login()
     assert client.access_token == "test"
     assert client.refresh_token == "test_"
 
 
-def test_refresh_token_after_some_time(login_response):
+def test_refresh_token_after_some_time(refresh_tokens_response):
     # login the client for the first time
-    client = TgtgClient(email="test@test.com", password="test")
+    client = TgtgClient(**tgtg_client_fake_tokens)
     client.login()
-
     new_access_token = "new_access_token"
     new_refresh_token = "new_refresh_token"
 
-    responses.add(
+    responses.replace(
         responses.POST,
         urljoin(BASE_URL, REFRESH_ENDPOINT),
         json={"access_token": new_access_token, "refresh_token": new_refresh_token},
@@ -95,17 +60,19 @@ def test_refresh_token_after_some_time(login_response):
         assert client.refresh_token == new_refresh_token
 
 
-def test_refresh_token_fail(login_response):
-    responses.add(
+def test_refresh_token_fail(refresh_tokens_response):
+
+    client = TgtgClient(**tgtg_client_fake_tokens)
+    client.login()
+    old_access_token = client.access_token
+    old_refresh_token = client.refresh_token
+
+    responses.replace(
         responses.POST,
         urljoin(BASE_URL, REFRESH_ENDPOINT),
         json={},
         status=400,
     )
-    client = TgtgClient(email="test@test.com", password="test")
-    client.login()
-    old_access_token = client.access_token
-    old_refresh_token = client.refresh_token
     with freeze_time(
         datetime.datetime.now()
         + datetime.timedelta(seconds=DEFAULT_ACCESS_TOKEN_LIFETIME + 1)
@@ -119,11 +86,6 @@ def test_refresh_token_fail(login_response):
 def test_login_empty_fail():
     with pytest.raises(TypeError):
         TgtgClient().login()
-
-
-def test_login_empty_email_fail():
-    with pytest.raises(TypeError):
-        TgtgClient(password="test").login()
 
 
 def test_login_empty_token_fail():

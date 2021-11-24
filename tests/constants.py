@@ -51,3 +51,9 @@ ITEM_PROPERTIES = [
     "favorite_count",
     "buffet",
 ]
+
+tgtg_client_fake_tokens = {
+    "access_token": "access_token",
+    "refresh_token": "refresh_token",
+    "user_id": "user_id",
+}

@@ -1,6 +1,6 @@
 import datetime
-import time
 import random
+import time
 from http import HTTPStatus
 from urllib.parse import urljoin
 
@@ -10,12 +10,10 @@ from .exceptions import TgtgAPIError, TgtgLoginError, TgtgPollingError
 
 BASE_URL = "https://apptoogoodtogo.com/api/"
 API_ITEM_ENDPOINT = "item/v7/"
-LOGIN_ENDPOINT = "auth/v2/loginByEmail"
 AUTH_BY_EMAIL_ENDPOINT = "auth/v3/authByEmail"
 AUTH_POLLING_ENDPOINT = "auth/v3/authByRequestPollingId"
 SIGNUP_BY_EMAIL_ENDPOINT = "auth/v2/signUpByEmail"
-REFRESH_ENDPOINT = "auth/v1/token/refresh"
-ALL_BUSINESS_ENDPOINT = "map/v1/listAllBusinessMap"
+REFRESH_ENDPOINT = "auth/v3/token/refresh"
 USER_AGENTS = [
     "TGTG/21.9.3 Dalvik/2.1.0 (Linux; U; Android 6.0.1; Nexus 5 Build/M4B30Z)",
     "TGTG/21.9.3 Dalvik/2.1.0 (Linux; U; Android 7.0; SM-G935F Build/NRD90M)",
@@ -31,7 +29,6 @@ class TgtgClient:
         self,
         url=BASE_URL,
         email=None,
-        password=None,
         access_token=None,
         refresh_token=None,
         user_id=None,
@@ -45,7 +42,6 @@ class TgtgClient:
         self.base_url = url
 
         self.email = email
-        self.password = password
 
         self.access_token = access_token
         self.refresh_token = refresh_token
@@ -61,6 +57,14 @@ class TgtgClient:
 
     def _get_url(self, path):
         return urljoin(self.base_url, path)
+
+    def get_credentials(self):
+        self.login()
+        return {
+            "access_token": self.access_token,
+            "refresh_token": self.refresh_token,
+            "user_id": self.user_id,
+        }
 
     @property
     def _headers(self):
@@ -84,6 +88,7 @@ class TgtgClient:
             <= self.access_token_lifetime
         ):
             return
+
         response = requests.post(
             self._get_url(REFRESH_ENDPOINT),
             headers=self._headers,
@@ -120,7 +125,6 @@ class TgtgClient:
             )
             if response.status_code == HTTPStatus.OK:
                 first_login_response = response.json()
-
                 if first_login_response["state"] == "TERMS":
                     raise TgtgPollingError(
                         "Please accept terms first, validate your email and then retry!"
@@ -133,8 +137,7 @@ class TgtgClient:
                     raise TgtgLoginError(response.status_code, response.content)
 
     def start_polling(self, polling_id):
-        retry_index = 0
-        for retry_index in range(MAX_POLLING_TRIES):
+        for _ in range(MAX_POLLING_TRIES):
             response = requests.post(
                 self._get_url(AUTH_POLLING_ENDPOINT),
                 headers=self._headers,
@@ -146,27 +149,26 @@ class TgtgClient:
                 proxies=self.proxies,
                 timeout=self.timeout,
             )
-
-            if response.status_code in (HTTPStatus.ACCEPTED, HTTPStatus.OK):
-                if response.status_code == HTTPStatus.OK:
-                    login_response = response.json()
-                    self.access_token = login_response["access_token"]
-                    self.refresh_token = login_response["refresh_token"]
-                    self.last_time_token_refreshed = datetime.datetime.now()
-                    self.user_id = login_response["startup_data"]["user"]["user_id"]
-                    break
+            if response.status_code == HTTPStatus.ACCEPTED:
+                print("Check your mailbox to continue...")
                 time.sleep(POLLING_WAIT_TIME)
+                continue
+            elif response.status_code == HTTPStatus.OK:
+                login_response = response.json()
+                self.access_token = login_response["access_token"]
+                self.refresh_token = login_response["refresh_token"]
+                self.last_time_token_refreshed = datetime.datetime.now()
+                self.user_id = login_response["startup_data"]["user"]["user_id"]
+                return
             else:
-                if response.status_code == 429:
+                if response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
                     raise TgtgAPIError("429 - Too many requests. Try again later.")
                 else:
                     raise TgtgLoginError(response.status_code, response.content)
-        if retry_index + 1 >= MAX_POLLING_TRIES:
-            raise TgtgPollingError(
-                "Max retries ("
-                + str(MAX_POLLING_TRIES * POLLING_WAIT_TIME)
-                + " Minutes) reached. Try again."
-            )
+
+        raise TgtgPollingError(
+            f"Max retries ({MAX_POLLING_TRIES * POLLING_WAIT_TIME} seconds) reached. Try again."
+        )
 
     def get_items(
         self,
