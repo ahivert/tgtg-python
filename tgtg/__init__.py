@@ -54,6 +54,7 @@ class TgtgClient:
         self.language = language
         self.proxies = proxies
         self.timeout = timeout
+        self.session = requests.Session()
 
     def _get_url(self, path):
         return urljoin(self.base_url, path)
@@ -89,15 +90,15 @@ class TgtgClient:
         ):
             return
 
-        response = requests.post(
+        response = self.session.post(
             self._get_url(REFRESH_ENDPOINT),
-            headers=self._headers,
             json={"refresh_token": self.refresh_token},
             proxies=self.proxies,
             timeout=self.timeout,
         )
         if response.status_code == HTTPStatus.OK:
             self.access_token = response.json()["access_token"]
+            self.session.headers = self._headers
             self.refresh_token = response.json()["refresh_token"]
             self.last_time_token_refreshed = datetime.datetime.now()
         else:
@@ -113,7 +114,8 @@ class TgtgClient:
         if self._already_logged:
             self._refresh_token()
         else:
-            response = requests.post(
+            self.session.headers = self._headers
+            response = self.session.post(
                 self._get_url(AUTH_BY_EMAIL_ENDPOINT),
                 headers=self._headers,
                 json={
@@ -138,7 +140,7 @@ class TgtgClient:
 
     def start_polling(self, polling_id):
         for _ in range(MAX_POLLING_TRIES):
-            response = requests.post(
+            response = self.session.post(
                 self._get_url(AUTH_POLLING_ENDPOINT),
                 headers=self._headers,
                 json={
@@ -150,12 +152,13 @@ class TgtgClient:
                 timeout=self.timeout,
             )
             if response.status_code == HTTPStatus.ACCEPTED:
-                print("Check your mailbox to continue...")
+                print("Check your mailbox to continue... ")
                 time.sleep(POLLING_WAIT_TIME)
                 continue
             elif response.status_code == HTTPStatus.OK:
                 login_response = response.json()
                 self.access_token = login_response["access_token"]
+                self.session.headers = self._headers
                 self.refresh_token = login_response["refresh_token"]
                 self.last_time_token_refreshed = datetime.datetime.now()
                 self.user_id = login_response["startup_data"]["user"]["user_id"]
@@ -209,7 +212,7 @@ class TgtgClient:
             "hidden_only": hidden_only,
             "we_care_only": we_care_only,
         }
-        response = requests.post(
+        response = self.session.post(
             self._get_url(API_ITEM_ENDPOINT),
             headers=self._headers,
             json=data,
@@ -223,7 +226,7 @@ class TgtgClient:
 
     def get_item(self, item_id):
         self.login()
-        response = requests.post(
+        response = self.session.post(
             urljoin(self._get_url(API_ITEM_ENDPOINT), str(item_id)),
             headers=self._headers,
             json={"user_id": self.user_id, "origin": None},
@@ -237,7 +240,7 @@ class TgtgClient:
 
     def set_favorite(self, item_id, is_favorite):
         self.login()
-        response = requests.post(
+        response = self.session.post(
             urljoin(self._get_url(API_ITEM_ENDPOINT), f"{item_id}/setFavorite"),
             headers=self._headers,
             json={"is_favorite": is_favorite},
@@ -258,7 +261,8 @@ class TgtgClient:
         newsletter_opt_in=False,
         push_notification_opt_in=True,
     ):
-        response = requests.post(
+        self.session.headers = self._headers
+        response = self.session.post(
             self._get_url(SIGNUP_BY_EMAIL_ENDPOINT),
             headers=self._headers,
             json={
@@ -275,6 +279,7 @@ class TgtgClient:
         )
         if response.status_code == HTTPStatus.OK:
             self.access_token = response.json()["access_token"]
+            self.session.headers = self._headers
             self.refresh_token = response.json()["refresh_token"]
             self.last_time_token_refreshed = datetime.datetime.now()
             self.user_id = response.json()["startup_data"]["user"]["user_id"]
