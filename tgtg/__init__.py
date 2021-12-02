@@ -12,7 +12,7 @@ BASE_URL = "https://apptoogoodtogo.com/api/"
 API_ITEM_ENDPOINT = "item/v7/"
 AUTH_BY_EMAIL_ENDPOINT = "auth/v3/authByEmail"
 AUTH_POLLING_ENDPOINT = "auth/v3/authByRequestPollingId"
-SIGNUP_BY_EMAIL_ENDPOINT = "auth/v2/signUpByEmail"
+SIGNUP_BY_EMAIL_ENDPOINT = "auth/v3/signUpByEmail"
 REFRESH_ENDPOINT = "auth/v3/token/refresh"
 USER_AGENTS = [
     "TGTG/21.9.3 Dalvik/2.1.0 (Linux; U; Android 6.0.1; Nexus 5 Build/M4B30Z)",
@@ -37,6 +37,7 @@ class TgtgClient:
         proxies=None,
         timeout=None,
         access_token_lifetime=DEFAULT_ACCESS_TOKEN_LIFETIME,
+        device_type="ANDROID",
     ):
 
         self.base_url = url
@@ -49,6 +50,8 @@ class TgtgClient:
 
         self.last_time_token_refreshed = None
         self.access_token_lifetime = access_token_lifetime
+
+        self.device_type = device_type
 
         self.user_agent = user_agent if user_agent else random.choice(USER_AGENTS)
         self.language = language
@@ -119,7 +122,7 @@ class TgtgClient:
                 self._get_url(AUTH_BY_EMAIL_ENDPOINT),
                 headers=self._headers,
                 json={
-                    "device_type": "ANDROID",
+                    "device_type": self.device_type,
                     "email": self.email,
                 },
                 proxies=self.proxies,
@@ -129,9 +132,13 @@ class TgtgClient:
                 first_login_response = response.json()
                 if first_login_response["state"] == "TERMS":
                     raise TgtgPollingError(
-                        "Please accept terms first, validate your email and then retry!"
+                        f"This email {self.email} is not linked to a tgtg account. "
+                        "Please signup with this email first."
                     )
-                self.start_polling(first_login_response["polling_id"])
+                elif first_login_response["state"] == "WAIT":
+                    self.start_polling(first_login_response["polling_id"])
+                else:
+                    raise TgtgLoginError(response.status_code, response.content)
             else:
                 if response.status_code == 429:
                     raise TgtgAPIError("429 - Too many requests. Try again later.")
@@ -144,7 +151,7 @@ class TgtgClient:
                 self._get_url(AUTH_POLLING_ENDPOINT),
                 headers=self._headers,
                 json={
-                    "device_type": "ANDROID",
+                    "device_type": self.device_type,
                     "email": self.email,
                     "request_polling_id": polling_id,
                 },
@@ -254,10 +261,8 @@ class TgtgClient:
         self,
         *,
         email,
-        password,
-        name,
+        name="",
         country_id="GB",
-        device_type="ANDROID",
         newsletter_opt_in=False,
         push_notification_opt_in=True,
     ):
@@ -266,21 +271,22 @@ class TgtgClient:
             headers=self._headers,
             json={
                 "country_id": country_id,
-                "device_type": device_type,
+                "device_type": self.device_type,
                 "email": email,
                 "name": name,
                 "newsletter_opt_in": newsletter_opt_in,
-                "password": password,
                 "push_notification_opt_in": push_notification_opt_in,
             },
             proxies=self.proxies,
             timeout=self.timeout,
         )
         if response.status_code == HTTPStatus.OK:
-            self.access_token = response.json()["access_token"]
-            self.refresh_token = response.json()["refresh_token"]
+            self.access_token = response.json()["login_response"]["access_token"]
+            self.refresh_token = response.json()["login_response"]["refresh_token"]
             self.last_time_token_refreshed = datetime.datetime.now()
-            self.user_id = response.json()["startup_data"]["user"]["user_id"]
+            self.user_id = response.json()["login_response"]["startup_data"]["user"][
+                "user_id"
+            ]
             return self
         else:
             raise TgtgAPIError(response.status_code, response.content)

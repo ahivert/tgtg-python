@@ -9,11 +9,12 @@ Python client that help you to talk with [TooGoodToGo](https://toogoodtogo.com) 
 Python version: 3.6, 3.7, 3.8, 3.9
 
 Handle:
-- login (`/api/auth/v3/authByEmail`)
+- create an account (`auth/vX/signUpByEmail`)
+- login (`/api/auth/vX/authByEmail`)
+- refresh token (`/api/auth/vX/token/refresh`)
 - list stores (`/api/item/`)
 - get a store (`/api/item/:id`)
 - set favorite (`/api/item/:id/setFavorite`)
-- create an account (`auth/v2/signUpByEmail`)
 
 Used by:
 - https://tgtg-notifier.com
@@ -364,7 +365,8 @@ client.set_favorite(item_id=64346, is_favorite=False)
 ```python
 from tgtg import TgtgClient
 
-client = TgtgClient(email="test@test.com", password="password", name="name")
+client = TgtgClient()
+client.signup_by_email(email="<your_email>")
 
 # client is now ready to be used
 ```

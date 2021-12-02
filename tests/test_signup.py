@@ -12,16 +12,17 @@ def test_signup_ok():
         responses.POST,
         urljoin(BASE_URL, SIGNUP_BY_EMAIL_ENDPOINT),
         json={
-            "access_token": "an_access_token",
-            "refresh_token": "a_refresh_token",
-            "startup_data": {"user": {"user_id": 1234}},
+            "login_response": {
+                "access_token": "an_access_token",
+                "refresh_token": "a_refresh_token",
+                "startup_data": {"user": {"user_id": 1234}},
+            }
         },
         status=200,
     )
-    client = TgtgClient().signup_by_email(
-        email="test@test.com", password="test@test.com", name="test"
-    )
+    client = TgtgClient().signup_by_email(email="test@test.com")
     assert client.access_token == "an_access_token"
+    assert client.refresh_token == "a_refresh_token"
     assert client.user_id == 1234
 
 
@@ -33,6 +34,4 @@ def test_signup_fail():
         status=400,
     )
     with pytest.raises(TgtgAPIError):
-        TgtgClient().signup_by_email(
-            email="test@test.com", password="test@test.com", name="test"
-        )
+        TgtgClient().signup_by_email(email="test@test.com")
