@@ -38,7 +38,8 @@ def test_get_items_custom_user_agent(refresh_tokens_response):
         len([call for call in responses.calls if API_ITEM_ENDPOINT in call.request.url])
         == 1
     )
-    assert responses.calls[0].request.headers["user-agent"] == custom_user_agent
+    for call in responses.calls:
+        assert call.request.headers["user-agent"] == custom_user_agent
 
 
 def test_get_items_fail(refresh_tokens_response):

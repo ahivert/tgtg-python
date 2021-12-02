@@ -55,6 +55,7 @@ class TgtgClient:
         self.proxies = proxies
         self.timeout = timeout
         self.session = requests.Session()
+        self.session.headers = self._headers
 
     def _get_url(self, path):
         return urljoin(self.base_url, path)
@@ -93,12 +94,12 @@ class TgtgClient:
         response = self.session.post(
             self._get_url(REFRESH_ENDPOINT),
             json={"refresh_token": self.refresh_token},
+            headers=self._headers,
             proxies=self.proxies,
             timeout=self.timeout,
         )
         if response.status_code == HTTPStatus.OK:
             self.access_token = response.json()["access_token"]
-            self.session.headers = self._headers
             self.refresh_token = response.json()["refresh_token"]
             self.last_time_token_refreshed = datetime.datetime.now()
         else:
@@ -114,7 +115,6 @@ class TgtgClient:
         if self._already_logged:
             self._refresh_token()
         else:
-            self.session.headers = self._headers
             response = self.session.post(
                 self._get_url(AUTH_BY_EMAIL_ENDPOINT),
                 headers=self._headers,
@@ -152,13 +152,13 @@ class TgtgClient:
                 timeout=self.timeout,
             )
             if response.status_code == HTTPStatus.ACCEPTED:
-                print("Check your mailbox to continue... ")
+                print("Check your mailbox to continue...")
                 time.sleep(POLLING_WAIT_TIME)
                 continue
             elif response.status_code == HTTPStatus.OK:
+                print("Logged in!")
                 login_response = response.json()
                 self.access_token = login_response["access_token"]
-                self.session.headers = self._headers
                 self.refresh_token = login_response["refresh_token"]
                 self.last_time_token_refreshed = datetime.datetime.now()
                 self.user_id = login_response["startup_data"]["user"]["user_id"]
@@ -261,7 +261,6 @@ class TgtgClient:
         newsletter_opt_in=False,
         push_notification_opt_in=True,
     ):
-        self.session.headers = self._headers
         response = self.session.post(
             self._get_url(SIGNUP_BY_EMAIL_ENDPOINT),
             headers=self._headers,
@@ -279,7 +278,6 @@ class TgtgClient:
         )
         if response.status_code == HTTPStatus.OK:
             self.access_token = response.json()["access_token"]
-            self.session.headers = self._headers
             self.refresh_token = response.json()["refresh_token"]
             self.last_time_token_refreshed = datetime.datetime.now()
             self.user_id = response.json()["startup_data"]["user"]["user_id"]
