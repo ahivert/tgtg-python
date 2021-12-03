@@ -159,7 +159,10 @@ class TgtgClient:
                 timeout=self.timeout,
             )
             if response.status_code == HTTPStatus.ACCEPTED:
-                print("Check your mailbox to continue...")
+                print(
+                    "Check your mailbox on PC to continue... "
+                    "(Mailbox on mobile won't work, if you have installed tgtg app.)"
+                )
                 time.sleep(POLLING_WAIT_TIME)
                 continue
             elif response.status_code == HTTPStatus.OK:
