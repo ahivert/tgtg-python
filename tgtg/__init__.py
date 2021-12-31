@@ -14,6 +14,8 @@ AUTH_BY_EMAIL_ENDPOINT = "auth/v3/authByEmail"
 AUTH_POLLING_ENDPOINT = "auth/v3/authByRequestPollingId"
 SIGNUP_BY_EMAIL_ENDPOINT = "auth/v3/signUpByEmail"
 REFRESH_ENDPOINT = "auth/v3/token/refresh"
+ACTIVE_ORDER_ENDPOINT = "order/v6/active"
+INACTIVE_ORDER_ENDPOINT = "order/v6/inactive"
 USER_AGENTS = [
     "TGTG/21.9.3 Dalvik/2.1.0 (Linux; U; Android 6.0.1; Nexus 5 Build/M4B30Z)",
     "TGTG/21.9.3 Dalvik/2.1.0 (Linux; U; Android 7.0; SM-G935F Build/NRD90M)",
@@ -291,5 +293,33 @@ class TgtgClient:
                 "user_id"
             ]
             return self
+        else:
+            raise TgtgAPIError(response.status_code, response.content)
+
+    def get_active(self):
+        self.login()
+        response = self.session.post(
+            self._get_url(ACTIVE_ORDER_ENDPOINT),
+            headers=self._headers,
+            json={"user_id": self.user_id},
+            proxies=self.proxies,
+            timeout=self.timeout,
+        )
+        if response.status_code == HTTPStatus.OK:
+            return response.json()
+        else:
+            raise TgtgAPIError(response.status_code, response.content)
+
+    def get_inactive(self, page=0, page_size=20):
+        self.login()
+        response = self.session.post(
+            self._get_url(INACTIVE_ORDER_ENDPOINT),
+            headers=self._headers,
+            json={"paging": {"page": page, "size": page_size}, "user_id": self.user_id},
+            proxies=self.proxies,
+            timeout=self.timeout,
+        )
+        if response.status_code == HTTPStatus.OK:
+            return response.json()
         else:
             raise TgtgAPIError(response.status_code, response.content)
