@@ -15,6 +15,8 @@ Handle:
 - list stores (`/api/item/`)
 - get a store (`/api/item/:id`)
 - set favorite (`/api/item/:id/setFavorite`)
+- get active orders (`/api/order/vX/active`)
+- get inactive orders (`/api/order/vX/inactive`)
 
 Used by:
 - https://tgtg-notifier.com
@@ -348,6 +350,51 @@ client.get_item(item_id=64346)
 ```
 
 </details>
+
+### Get active orders
+
+```python
+client.get_active()
+```
+
+### Get inactive orders
+
+```python
+client.get_inactive(page=0, page_size=20)
+
+# returned object has `has_more` property if more results are available
+```
+
+To e.g. sum up all orders you have ever made:
+
+```python
+    orders = []
+    page = 0
+    while inactive := client.get_inactive(page=page, page_size=200):
+        orders += inactive["orders"]
+        if not inactive["has_more"]:
+            break
+
+    redeemed_orders = [x for x in orders if x["state"] == "REDEEMED"]
+    redeemed_items = sum([x["quantity"] for x in redeemed_orders])
+
+    # if you bought in multiple currencies this will need improvements
+    money_spend = sum(
+        [
+            x["price_including_taxes"]["minor_units"]
+            / (10 ** x["price_including_taxes"]["decimals"])
+            for x in redeemed_orders
+        ]
+    )
+
+    print(f"Total numbers of orders: {len(orders)}")
+    print(f"Total numbers of picked up orders: {len(redeemed_orders)}")
+    print(f"Total numbers of items picked up: {redeemed_items}")
+    print(
+        f"Total money spend: ~{money_spend:.2f}{redeemed_orders[0]['price_including_taxes']['code']}"
+    )
+```
+
 
 ### Set favorite
 *(Using item_id from get_items response)*
