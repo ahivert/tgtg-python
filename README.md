@@ -37,15 +37,16 @@ Build the client with your email
 from tgtg import TgtgClient
 
 client = TgtgClient(email="<your_email>")
-client.get_credentials()
+credentials = client.get_credentials()
 ```
 
 You should receive an email from tgtg. 
 The will wait until you validate the login by clicking the link inside the email.
 
-Once you clicked the link in the email, the client will print you tokens
+Once you clicked the link, you will get credentials and be able to use them
 
 ```python
+print(credentials)
 {
     'access_token': '<your_access_token>',
     'refresh_token': '<your_refresh_token>',
