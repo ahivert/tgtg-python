@@ -8,7 +8,7 @@ repository = "https://github.com/ahivert/tgtg-python"
 
 [tool.poetry.dependencies]
 python = "^3.6"
-requests = "2.26.0"
+requests = "2.27.0"
 
 [tool.isort]
 profile = "black"
