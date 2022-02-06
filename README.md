@@ -69,15 +69,17 @@ client = TgtgClient(access_token="<access_token>", refresh_token="<refresh_token
 
 ```python
 # You can then get some items, by default it will *only* get your favorites
-client.get_items()
+items = client.get_items()
+print(items)
 
 # To get items (not only your favorites) you need to provide location informations
-client.get_items(
+items = client.get_items(
     favorites_only=False,
     latitude=48.126,
     longitude=-1.723,
     radius=10,
 )
+print(items)
 ```
 
 <details>
@@ -181,7 +183,8 @@ client.get_items(
 ### Get an item
 *(Using item_id from get_items response)*
 ```python
-client.get_item(item_id=64346)
+item = client.get_item(item_id=64346)
+print(item)
 ```
 
 <details>
@@ -355,7 +358,8 @@ client.get_item(item_id=64346)
 ### Get active orders
 
 ```python
-client.get_active()
+active = client.get_active()
+print(active)
 ```
 
 ### Get inactive orders
