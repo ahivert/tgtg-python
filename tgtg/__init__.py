@@ -143,7 +143,9 @@ class TgtgClient:
                     raise TgtgLoginError(response.status_code, response.content)
             else:
                 if response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
-                    raise TgtgAPIError(response.status_code, "Too many requests. Try again later.")
+                    raise TgtgAPIError(
+                        response.status_code, "Too many requests. Try again later."
+                    )
                 else:
                     raise TgtgLoginError(response.status_code, response.content)
 
@@ -177,7 +179,9 @@ class TgtgClient:
                 return
             else:
                 if response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
-                    raise TgtgAPIError(response.status_code, "Too many requests. Try again later.")
+                    raise TgtgAPIError(
+                        response.status_code, "Too many requests. Try again later."
+                    )
                 else:
                     raise TgtgLoginError(response.status_code, response.content)
 
