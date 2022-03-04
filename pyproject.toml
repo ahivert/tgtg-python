@@ -21,7 +21,7 @@ responses = "^0.17.0"
 pytest-cov = "^3.0.0"
 pytest-responses = "^0.5.0"
 isort = "^5.8.0"
-freezegun = "^1.1.0"
+freezegun = "^1.2.0"
 typed-ast = "^1.5.2"  # fix black with py3.9
 
 [build-system]
