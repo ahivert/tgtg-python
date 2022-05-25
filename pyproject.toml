@@ -22,7 +22,7 @@ pytest-cov = "^3.0.0"
 pytest-responses = "^0.5.0"
 isort = "^5.8.0"
 freezegun = "^1.2.1"
-typed-ast = "^1.5.4"  # fix black with py3.9
+typed-ast = "^1.5.4"
 
 [build-system]
 requires = ["poetry>=0.12"]
