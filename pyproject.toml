@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tgtg"
-version = "0.11.3"
+version = "0.11.4"
 description = "Unoffical python client for TooGoodToGo API"
 readme = "README.md"
 authors = ["Anthony Hivert <anthony.hivert@gmail.com>"]
@@ -8,7 +8,7 @@ repository = "https://github.com/ahivert/tgtg-python"
 
 [tool.poetry.dependencies]
 python = "^3.6"
-requests = "2.27.1"
+requests = "2.28.0"
 
 [tool.isort]
 profile = "black"
