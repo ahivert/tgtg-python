@@ -6,7 +6,7 @@
 
 Python client that help you to talk with [TooGoodToGo](https://toogoodtogo.com) API.
 
-Python version: 3.6, 3.7, 3.8, 3.9
+Python version: 3.7+
 
 Handle:
 
