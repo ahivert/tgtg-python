@@ -9,6 +9,7 @@ Python client that help you to talk with [TooGoodToGo](https://toogoodtogo.com) 
 Python version: 3.6, 3.7, 3.8, 3.9
 
 Handle:
+
 - create an account (`auth/vX/signUpByEmail`)
 - login (`/api/auth/vX/authByEmail`)
 - refresh token (`/api/auth/vX/token/refresh`)
@@ -17,9 +18,6 @@ Handle:
 - set favorite (`/api/item/:id/setFavorite`)
 - get active orders (`/api/order/vX/active`)
 - get inactive orders (`/api/order/vX/inactive`)
-
-Used by:
-- https://tgtg-notifier.com
 
 ## Install
 
@@ -40,7 +38,7 @@ client = TgtgClient(email="<your_email>")
 credentials = client.get_credentials()
 ```
 
-You should receive an email from tgtg. 
+You should receive an email from tgtg.
 The will wait until you validate the login by clicking the link inside the email.
 
 Once you clicked the link, you will get credentials and be able to use them
@@ -53,8 +51,6 @@ print(credentials)
     'user_id': '<your_user_id>',
 }
 ```
-
-
 
 ### Build the client from tokens
 
@@ -178,10 +174,13 @@ print(items)
     },
 ]
 ```
+
 </details>
 
 ### Get an item
-*(Using item_id from get_items response)*
+
+_(Using item_id from get_items response)_
+
 ```python
 item = client.get_item(item_id=64346)
 print(item)
@@ -400,9 +399,9 @@ To e.g. sum up all orders you have ever made:
     )
 ```
 
-
 ### Set favorite
-*(Using item_id from get_items response)*
+
+_(Using item_id from get_items response)_
 
 ```python
 # add favorite
@@ -427,6 +426,7 @@ client.signup_by_email(email="<your_email>")
 
 This project uses poetry so you will need to install poetry locally to use following
 commands.
+
 ```
 pip install poetry --user
 poetry install
@@ -434,12 +434,14 @@ poetry install
 
 This project uses [pre-commit](https://pre-commit.com/) to format/check all the
 code before each commit automatically.
+
 ```
 pip install pre-commit --user
 pre-commit install
 ```
 
 Run this command to run all tests:
+
 ```
 make test
 ```
