@@ -59,9 +59,14 @@ class TgtgClient:
 
         self.device_type = device_type
 
+        self.user_agent = user_agent if user_agent else self._get_user_agent()
         self.language = language
         self.proxies = proxies
         self.timeout = timeout
+        self.session = requests.Session()
+        self.session.headers = self._headers
+
+    def _get_user_agent(self):
         try:
             self.version = get_last_apk_version()
         except Exception:
@@ -70,13 +75,7 @@ class TgtgClient:
 
         sys.stdout.write(f"Using version {self.version}\n")
 
-        self.user_agent = (
-            user_agent
-            if user_agent
-            else random.choice(USER_AGENTS).format(self.version)
-        )
-        self.session = requests.Session()
-        self.session.headers = self._headers
+        return random.choice(USER_AGENTS).format(self.version)
 
     def _get_url(self, path):
         return urljoin(self.base_url, path)
