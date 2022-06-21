@@ -1,10 +1,13 @@
 import datetime
 import random
+import sys
 import time
 from http import HTTPStatus
 from urllib.parse import urljoin
 
 import requests
+
+from tgtg.google_play_scraper import get_last_apk_version
 
 from .exceptions import TgtgAPIError, TgtgLoginError, TgtgPollingError
 
@@ -16,10 +19,11 @@ SIGNUP_BY_EMAIL_ENDPOINT = "auth/v3/signUpByEmail"
 REFRESH_ENDPOINT = "auth/v3/token/refresh"
 ACTIVE_ORDER_ENDPOINT = "order/v6/active"
 INACTIVE_ORDER_ENDPOINT = "order/v6/inactive"
+DEFAULT_APK_VERSION = "22.5.5"
 USER_AGENTS = [
-    "TGTG/22.5.5 Dalvik/2.1.0 (Linux; U; Android 6.0.1; Nexus 5 Build/M4B30Z)",
-    "TGTG/22.5.5 Dalvik/2.1.0 (Linux; U; Android 7.0; SM-G935F Build/NRD90M)",
-    "TGTG/22.5.5 Dalvik/2.1.0 (Linux; Android 6.0.1; SM-G920V Build/MMB29K)",
+    "TGTG/{} Dalvik/2.1.0 (Linux; U; Android 9; Nexus 5 Build/M4B30Z)",
+    "TGTG/{} Dalvik/2.1.0 (Linux; U; Android 10; SM-G935F Build/NRD90M)",
+    "TGTG/{} Dalvik/2.1.0 (Linux; Android 12; SM-G920V Build/MMB29K)",
 ]
 DEFAULT_ACCESS_TOKEN_LIFETIME = 3600 * 4  # 4 hours
 MAX_POLLING_TRIES = 24  # 24 * POLLING_WAIT_TIME = 2 minutes
@@ -55,12 +59,23 @@ class TgtgClient:
 
         self.device_type = device_type
 
-        self.user_agent = user_agent if user_agent else random.choice(USER_AGENTS)
+        self.user_agent = user_agent if user_agent else self._get_user_agent()
         self.language = language
         self.proxies = proxies
         self.timeout = timeout
         self.session = requests.Session()
         self.session.headers = self._headers
+
+    def _get_user_agent(self):
+        try:
+            self.version = get_last_apk_version()
+        except Exception:
+            self.version = DEFAULT_APK_VERSION
+            sys.stdout.write("Failed to get last version\n")
+
+        sys.stdout.write(f"Using version {self.version}\n")
+
+        return random.choice(USER_AGENTS).format(self.version)
 
     def _get_url(self, path):
         return urljoin(self.base_url, path)
@@ -163,14 +178,14 @@ class TgtgClient:
                 timeout=self.timeout,
             )
             if response.status_code == HTTPStatus.ACCEPTED:
-                print(
+                sys.stdout.write(
                     "Check your mailbox on PC to continue... "
-                    "(Mailbox on mobile won't work, if you have installed tgtg app.)"
+                    "(Mailbox on mobile won't work, if you have installed tgtg app.)\n"
                 )
                 time.sleep(POLLING_WAIT_TIME)
                 continue
             elif response.status_code == HTTPStatus.OK:
-                print("Logged in!")
+                sys.stdout.write("Logged in!\n")
                 login_response = response.json()
                 self.access_token = login_response["access_token"]
                 self.refresh_token = login_response["refresh_token"]
