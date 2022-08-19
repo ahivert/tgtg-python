@@ -4,7 +4,7 @@ import re
 import requests
 
 RE_SCRIPT = re.compile(
-    r"AF_initDataCallback\({key:\s*'ds:4'.*?data:([\s\S]*?), sideChannel:.+<\/script"
+    r"AF_initDataCallback\({key:\s*'ds:5'.*?data:([\s\S]*?), sideChannel:.+<\/script"
 )
 
 
