@@ -259,7 +259,7 @@ testing = ["fields", "hunter", "process-tests", "pytest-xdist", "six", "virtuale
 
 [[package]]
 name = "pytest-responses"
-version = "0.5.0"
+version = "0.5.1"
 description = "py.test integration for responses"
 category = "dev"
 optional = false
@@ -422,7 +422,7 @@ testing = ["func-timeout", "jaraco.itertools", "pytest (>=6)", "pytest-black (>=
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "9af4b641ff2176dc2f1c4048a98c22a82ce541b2f6408b08584c250b29a2d3ea"
+content-hash = "a54eb3ce3ba04b997e596816e1aca95b14e342594debf9d691eedcc2db9970dd"
 
 [metadata.files]
 attrs = [
@@ -553,7 +553,7 @@ pytest-cov = [
     {file = "pytest_cov-4.0.0-py3-none-any.whl", hash = "sha256:2feb1b751d66a8bd934e5edfa2e961d11309dc37b73b0eabe73b5945fee20f6b"},
 ]
 pytest-responses = [
-    {file = "pytest_responses-0.5.0-py2.py3-none-any.whl", hash = "sha256:6fffd7412294c8a01ccfec05ae51910db76aeb0df877c5fac16c64991cb465e6"},
+    {file = "pytest_responses-0.5.1-py2.py3-none-any.whl", hash = "sha256:4172e565b94ac1ea3b10aba6e40855ad60cd7f141476b2d8a47e4b5f250be734"},
 ]
 python-dateutil = [
     {file = "python-dateutil-2.8.2.tar.gz", hash = "sha256:0123cacc1627ae19ddf3c27a5de5bd67ee4586fbdd6440d9748f8abb483d3e86"},
