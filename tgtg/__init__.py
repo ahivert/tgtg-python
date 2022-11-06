@@ -42,6 +42,7 @@ class TgtgClient:
         language="en-UK",
         proxies=None,
         timeout=None,
+        last_time_token_refreshed=None,
         access_token_lifetime=DEFAULT_ACCESS_TOKEN_LIFETIME,
         device_type="ANDROID",
     ):
@@ -54,7 +55,7 @@ class TgtgClient:
         self.refresh_token = refresh_token
         self.user_id = user_id
 
-        self.last_time_token_refreshed = None
+        self.last_time_token_refreshed = last_time_token_refreshed
         self.access_token_lifetime = access_token_lifetime
 
         self.device_type = device_type
