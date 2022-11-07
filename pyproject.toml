@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tgtg"
-version = "0.13.1"
+version = "0.13.2"
 description = "Unoffical python client for TooGoodToGo API"
 readme = "README.md"
 authors = ["Anthony Hivert <anthony.hivert@gmail.com>"]
