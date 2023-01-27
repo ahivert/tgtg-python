@@ -95,9 +95,11 @@ class TgtgClient:
     @property
     def _headers(self):
         headers = {
-            "user-agent": self.user_agent,
-            "accept-language": self.language,
+            "accept": "application/json",
             "Accept-Encoding": "gzip",
+            "accept-language": self.language,
+            "content-type": "application/json; charset=utf-8",
+            "user-agent": self.user_agent,
         }
         if self.cookie:
             headers["Cookie"] = self.cookie
