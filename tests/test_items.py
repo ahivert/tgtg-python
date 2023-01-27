@@ -32,7 +32,7 @@ def test_get_items_custom_user_agent(refresh_tokens_response):
         status=200,
     )
     custom_user_agent = "test"
-    client = TgtgClient(**tgtg_client_fake_tokens, user_agent=custom_user_agent)
+    client = TgtgClient(user_agent=custom_user_agent, **tgtg_client_fake_tokens)
     client.get_items()
     assert (
         len([call for call in responses.calls if API_ITEM_ENDPOINT in call.request.url])

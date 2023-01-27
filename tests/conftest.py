@@ -45,4 +45,5 @@ def refresh_tokens_response():
             "refresh_token": "a_refresh_token",
         },
         status=200,
+        adding_headers={"set-cookie": "sweet sweet cookie"},
     )
