@@ -20,11 +20,13 @@ def test_login_with_tokens():
             "refresh_token": "test_",
         },
         status=200,
+        adding_headers={"set-cookie": "sweet sweet cookie"},
     )
     client = TgtgClient(**tgtg_client_fake_tokens)
     client.login()
     assert client.access_token == "test"
     assert client.refresh_token == "test_"
+    assert client.cookie == "sweet sweet cookie"
 
 
 def test_refresh_token_after_some_time(refresh_tokens_response):
@@ -39,6 +41,7 @@ def test_refresh_token_after_some_time(refresh_tokens_response):
         urljoin(BASE_URL, REFRESH_ENDPOINT),
         json={"access_token": new_access_token, "refresh_token": new_refresh_token},
         status=200,
+        headers={"set-cookie": "sweet sweet cookie"},
     )
 
     # token lifetime is ok, no need to refresh

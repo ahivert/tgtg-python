@@ -39,7 +39,7 @@ credentials = client.get_credentials()
 ```
 
 You should receive an email from tgtg.
-The will wait until you validate the login by clicking the link inside the email.
+The client will wait until you validate the login by clicking the link inside the email.
 
 Once you clicked the link, you will get credentials and be able to use them
 
@@ -49,6 +49,7 @@ print(credentials)
     'access_token': '<your_access_token>',
     'refresh_token': '<your_refresh_token>',
     'user_id': '<your_user_id>',
+    'cookie': '<cookie>',
 }
 ```
 
@@ -57,7 +58,7 @@ print(credentials)
 ```python
 from tgtg import TgtgClient
 
-client = TgtgClient(access_token="<access_token>", refresh_token="<refresh_token>", user_id="<user_id>")
+client = TgtgClient(access_token="<access_token>", refresh_token="<refresh_token>", user_id="<user_id>", cookie="<cookie>")
 
 ```
 

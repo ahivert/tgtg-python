@@ -15,6 +15,7 @@ def test_get_active_success(refresh_tokens_response):
         urljoin(BASE_URL, ACTIVE_ORDER_ENDPOINT),
         json={"orders": []},
         status=200,
+        headers={"set-cookie": "session_id=12345; a=b; c=d"},
     )
     client = TgtgClient(**tgtg_client_fake_tokens)
     assert client.get_active()["orders"] == []

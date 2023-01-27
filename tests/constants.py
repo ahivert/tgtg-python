@@ -2,15 +2,13 @@ GLOBAL_PROPERTIES = [
     "item",
     "store",
     "display_name",
-    "pickup_interval",
     "pickup_location",
-    "purchase_end",
     "items_available",
-    "sold_out_at",
     "distance",
     "favorite",
     "in_sales_window",
     "new_item",
+    "item_type",
 ]
 STORE_PROPERTIES = [
     "store_id",
@@ -26,10 +24,12 @@ STORE_PROPERTIES = [
     "items",
     "milestones",
     "we_care",
+    "distance",
+    "cover_picture",
+    "is_manufacturer",
 ]
 ITEM_PROPERTIES = [
     "item_id",
-    "price",
     "sales_taxes",
     "tax_amount",
     "price_excluding_taxes",
@@ -42,18 +42,23 @@ ITEM_PROPERTIES = [
     "logo_picture",
     "name",
     "description",
+    "food_handling_instructions",
     "can_user_supply_packaging",
     "packaging_option",
+    "collection_info",
     "diet_categories",
     "item_category",
+    "buffet",
     "badges",
     "positive_rating_reasons",
+    "average_overall_rating",
+    "allergens_info",
     "favorite_count",
-    "buffet",
 ]
 
 tgtg_client_fake_tokens = {
     "access_token": "access_token",
     "refresh_token": "refresh_token",
     "user_id": "user_id",
+    "cookie": "cookie",
 }

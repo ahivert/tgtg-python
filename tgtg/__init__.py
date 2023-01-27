@@ -45,6 +45,7 @@ class TgtgClient:
         last_time_token_refreshed=None,
         access_token_lifetime=DEFAULT_ACCESS_TOKEN_LIFETIME,
         device_type="ANDROID",
+        cookie=None,
     ):
 
         self.base_url = url
@@ -54,6 +55,7 @@ class TgtgClient:
         self.access_token = access_token
         self.refresh_token = refresh_token
         self.user_id = user_id
+        self.cookie = cookie
 
         self.last_time_token_refreshed = last_time_token_refreshed
         self.access_token_lifetime = access_token_lifetime
@@ -87,6 +89,7 @@ class TgtgClient:
             "access_token": self.access_token,
             "refresh_token": self.refresh_token,
             "user_id": self.user_id,
+            "cookie": self.cookie,
         }
 
     @property
@@ -96,6 +99,8 @@ class TgtgClient:
             "accept-language": self.language,
             "Accept-Encoding": "gzip",
         }
+        if self.cookie:
+            headers["Cookie"] = self.cookie
         if self.access_token:
             headers["authorization"] = f"Bearer {self.access_token}"
         return headers
@@ -123,15 +128,20 @@ class TgtgClient:
             self.access_token = response.json()["access_token"]
             self.refresh_token = response.json()["refresh_token"]
             self.last_time_token_refreshed = datetime.datetime.now()
+            self.cookie = response.headers["Set-Cookie"]
         else:
             raise TgtgAPIError(response.status_code, response.content)
 
     def login(self):
         if not (
-            self.email or self.access_token and self.refresh_token and self.user_id
+            self.email
+            or self.access_token
+            and self.refresh_token
+            and self.user_id
+            and self.cookie
         ):
             raise TypeError(
-                "You must provide at least email or access_token, refresh_token and user_id"
+                "You must provide at least email or access_token, refresh_token, user_id and cookie"
             )
         if self._already_logged:
             self._refresh_token()
@@ -192,6 +202,7 @@ class TgtgClient:
                 self.refresh_token = login_response["refresh_token"]
                 self.last_time_token_refreshed = datetime.datetime.now()
                 self.user_id = login_response["startup_data"]["user"]["user_id"]
+                self.cookie = response.headers["Set-Cookie"]
                 return
             else:
                 if response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
