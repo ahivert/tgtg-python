@@ -47,7 +47,6 @@ class TgtgClient:
         device_type="ANDROID",
         cookie=None,
     ):
-
         self.base_url = url
 
         self.email = email

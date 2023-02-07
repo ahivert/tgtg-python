@@ -64,7 +64,6 @@ def test_refresh_token_after_some_time(refresh_tokens_response):
 
 
 def test_refresh_token_fail(refresh_tokens_response):
-
     client = TgtgClient(**tgtg_client_fake_tokens)
     client.login()
     old_access_token = client.access_token
