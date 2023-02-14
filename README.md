@@ -15,6 +15,7 @@ Handle:
 - refresh token (`/api/auth/vX/token/refresh`)
 - list stores (`/api/item/`)
 - get a store (`/api/item/:id`)
+- get favorites (`/api/discover/v1/bucket`)
 - set favorite (`/api/item/:id/setFavorite`)
 - create an order (`/api/order/vX/create/`)
 - abort an order (`/api/order/vX/:id/abort`)
@@ -542,6 +543,17 @@ To e.g. sum up all orders you have ever made:
         f"Total money spend: ~{money_spend:.2f}{redeemed_orders[0]['price_including_taxes']['code']}"
     )
 ```
+
+### Get favorites
+
+This will list all the currently set favorite stores.
+
+```python
+favorites = client.get_favorites()
+print(favorites)
+```
+
+The behavior of `get_favorites` is more or less the same as `get_items()`, but better mimics the official application.
 
 ### Set favorite
 
