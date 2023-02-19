@@ -19,6 +19,9 @@ SIGNUP_BY_EMAIL_ENDPOINT = "auth/v3/signUpByEmail"
 REFRESH_ENDPOINT = "auth/v3/token/refresh"
 ACTIVE_ORDER_ENDPOINT = "order/v6/active"
 INACTIVE_ORDER_ENDPOINT = "order/v6/inactive"
+CREATE_ORDER_ENDPOINT = "order/v7/create/"
+ABORT_ORDER_ENDPOINT = "order/v7/{}/abort"
+ORDER_STATUS_ENDPOINT = "order/v7/{}/status"
 DEFAULT_APK_VERSION = "22.5.5"
 USER_AGENTS = [
     "TGTG/{} Dalvik/2.1.0 (Linux; U; Android 9; Nexus 5 Build/M4B30Z)",
@@ -293,6 +296,55 @@ class TgtgClient:
         )
         if response.status_code != HTTPStatus.OK:
             raise TgtgAPIError(response.status_code, response.content)
+
+    def create_order(self, item_id, item_count):
+        self.login()
+
+        response = self.session.post(
+            urljoin(self._get_url(CREATE_ORDER_ENDPOINT), str(item_id)),
+            headers=self._headers,
+            json={"item_count": item_count},
+            proxies=self.proxies,
+            timeout=self.timeout,
+        )
+        if response.status_code != HTTPStatus.OK:
+            raise TgtgAPIError(response.status_code, response.content)
+        elif response.json()["state"] != "SUCCESS":
+            raise TgtgAPIError(response.json()["state"], response.content)
+        else:
+            return response.json()["order"]
+
+    def get_order_status(self, order_id):
+        self.login()
+
+        response = self.session.post(
+            self._get_url(ORDER_STATUS_ENDPOINT.format(order_id)),
+            headers=self._headers,
+            proxies=self.proxies,
+            timeout=self.timeout,
+        )
+        if response.status_code == HTTPStatus.OK:
+            return response.json()
+        else:
+            raise TgtgAPIError(response.status_code, response.content)
+
+    def abort_order(self, order_id):
+        """Use this when your order is not yet paid"""
+        self.login()
+
+        response = self.session.post(
+            self._get_url(ABORT_ORDER_ENDPOINT.format(order_id)),
+            headers=self._headers,
+            json={"cancel_reason_id": 1},
+            proxies=self.proxies,
+            timeout=self.timeout,
+        )
+        if response.status_code != HTTPStatus.OK:
+            raise TgtgAPIError(response.status_code, response.content)
+        elif response.json()["state"] != "SUCCESS":
+            raise TgtgAPIError(response.json()["state"], response.content)
+        else:
+            return
 
     def signup_by_email(
         self,
