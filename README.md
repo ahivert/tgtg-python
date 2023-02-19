@@ -16,6 +16,9 @@ Handle:
 - list stores (`/api/item/`)
 - get a store (`/api/item/:id`)
 - set favorite (`/api/item/:id/setFavorite`)
+- create an order (`api/order/vX/create/`)
+- abort an order (`order/vX/:id/abort`)
+- get the status of an order (`order/vX/:id/status`)
 - get active orders (`/api/order/vX/active`)
 - get inactive orders (`/api/order/vX/inactive`)
 
@@ -415,6 +418,82 @@ print(item)
 ```
 
 </details>
+
+## Create an order
+
+```python
+order = client.create_order(item_id, number_of_items_to_order)
+print(order)
+```
+
+<details>
+<summary>Example response</summary>
+
+```python
+{
+  "id": "<order_id>",
+  "item_id": "<item_id_that_was_ordered>",
+  "user_id": "<your_user_id>",
+  "state": "RESERVED",
+  "order_line": {
+    "quantity": 1,
+    "item_price_including_taxes": {
+      "code": "EUR",
+      "minor_units": 600,
+      "decimals": 2
+    },
+    "item_price_excluding_taxes": {
+      "code": "EUR",
+      "minor_units": 550,
+      "decimals": 2
+    },
+    "total_price_including_taxes": {
+      "code": "EUR",
+      "minor_units": 600,
+      "decimals": 2
+    },
+    "total_price_excluding_taxes": {
+      "code": "EUR",
+      "minor_units": 550,
+      "decimals": 2
+    }
+  },
+  "reserved_at": "2023-01-01T10:30:32.331280392",
+  "order_type": "MAGICBAG"
+}
+```
+
+</details>
+
+### Get the status of an order
+
+```python
+order_status = client.get_order_status(order_id)
+print(order_status)
+```
+
+<details>
+<summary>Example response</summary>
+
+```python
+{
+  "id": "<order_id>",
+  "item_id": "<item_id_that_was_ordered>",
+  "user_id": "<your_user_id>",
+  "state": "RESERVED"
+}
+```
+
+</details>
+
+### Abort an order
+```python
+client.abort_order(order_id)
+```
+
+When successful, this call will not return a value.
+
+The app uses this call when the user aborts an order before paying for it. When the order has been payed, the app uses a different call.
 
 ### Get active orders
 
