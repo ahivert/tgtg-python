@@ -465,6 +465,9 @@ print(order)
 
 </details>
 
+Please note that payment of an order is currently not implemented.
+In other words: you can create an order via this framework, but you can not pay for it.
+
 ### Get the status of an order
 
 ```python
