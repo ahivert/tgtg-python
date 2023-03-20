@@ -19,7 +19,7 @@ pre-commit = "^3.2.0"
 pytest = "^7.2.1"
 pytest-cov = "^4.0.0"
 pytest-responses = "^0.5.1"
-responses = "^0.22.0"
+responses = "^0.23.1"
 typed-ast = "^1.5.4"
 
 [build-system]
