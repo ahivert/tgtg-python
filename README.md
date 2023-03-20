@@ -10,15 +10,15 @@ Python version: 3.8+
 
 Handle:
 
-- create an account (`auth/vX/signUpByEmail`)
+- create an account (`/api/auth/vX/signUpByEmail`)
 - login (`/api/auth/vX/authByEmail`)
 - refresh token (`/api/auth/vX/token/refresh`)
 - list stores (`/api/item/`)
 - get a store (`/api/item/:id`)
 - set favorite (`/api/item/:id/setFavorite`)
-- create an order (`api/order/vX/create/`)
-- abort an order (`order/vX/:id/abort`)
-- get the status of an order (`order/vX/:id/status`)
+- create an order (`/api/order/vX/create/`)
+- abort an order (`/api/order/vX/:id/abort`)
+- get the status of an order (`/api/order/vX/:id/status`)
 - get active orders (`/api/order/vX/active`)
 - get inactive orders (`/api/order/vX/inactive`)
 
@@ -466,7 +466,7 @@ print(order)
 </details>
 
 Please note that payment of an order is currently not implemented.
-In other words: you can create an order via this framework, but you can not pay for it.
+In other words: you can create an order via this client, but you can not pay for it.
 
 ### Get the status of an order
 
