@@ -22,6 +22,7 @@ INACTIVE_ORDER_ENDPOINT = "order/v6/inactive"
 CREATE_ORDER_ENDPOINT = "order/v7/create/"
 ABORT_ORDER_ENDPOINT = "order/v7/{}/abort"
 ORDER_STATUS_ENDPOINT = "order/v7/{}/status"
+API_BUCKET_ENDPOINT = "discover/v1/bucket"
 DEFAULT_APK_VERSION = "22.5.5"
 USER_AGENTS = [
     "TGTG/{} Dalvik/2.1.0 (Linux; U; Android 9; Nexus 5 Build/M4B30Z)",
@@ -282,6 +283,36 @@ class TgtgClient:
         )
         if response.status_code == HTTPStatus.OK:
             return response.json()
+        else:
+            raise TgtgAPIError(response.status_code, response.content)
+
+    def get_favorites(
+        self,
+        latitude=0.0,
+        longitude=0.0,
+        radius=21,
+        page_size=50,
+        page=0,
+    ):
+        self.login()
+
+        # fields are sorted like in the app
+        data = {
+            "origin": {"latitude": latitude, "longitude": longitude},
+            "radius": radius,
+            "user_id": self.user_id,
+            "paging": {"page": page, "size": page_size},
+            "bucket": {"filler_type": "Favorites"},
+        }
+        response = self.session.post(
+            self._get_url(API_BUCKET_ENDPOINT),
+            headers=self._headers,
+            json=data,
+            proxies=self.proxies,
+            timeout=self.timeout,
+        )
+        if response.status_code == HTTPStatus.OK:
+            return response.json()["mobile_bucket"]["items"]
         else:
             raise TgtgAPIError(response.status_code, response.content)
 
