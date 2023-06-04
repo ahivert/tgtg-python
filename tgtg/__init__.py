@@ -14,8 +14,8 @@ from tgtg.google_play_scraper import get_last_apk_version
 from .exceptions import TgtgAPIError, TgtgLoginError, TgtgPollingError
 
 BASE_URL = "https://apptoogoodtogo.com/api/"
+API_ITEM_ENDPOINT = "item/v8/"
 BASE_URL_ADYEN = "https://checkoutshopper-live.adyen.com/"
-API_ITEM_ENDPOINT = "item/v7/"
 AUTH_BY_EMAIL_ENDPOINT = "auth/v3/authByEmail"
 AUTH_POLLING_ENDPOINT = "auth/v3/authByRequestPollingId"
 SIGNUP_BY_EMAIL_ENDPOINT = "auth/v3/signUpByEmail"
