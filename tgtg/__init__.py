@@ -1,13 +1,13 @@
 import datetime
+import json
 import random
 import sys
 import time
 from http import HTTPStatus
 from urllib.parse import urljoin
-from py_adyen_encrypt import encryptor
-import json
 
 import requests
+from py_adyen_encrypt import encryptor
 
 from tgtg.google_play_scraper import get_last_apk_version
 
@@ -28,7 +28,9 @@ ORDER_STATUS_ENDPOINT = "order/v7/{}/status"
 API_BUCKET_ENDPOINT = "discover/v1/bucket"
 PAY_ORDER_ENDPOINT = "order/v7/{}/pay"
 PAYMENT_STATUS_ENDPOINT = "payment/v3/{}"
-ADYEN_KEY_ENDPOINT = "checkoutshopper/v1/clientKeys/live_VPX45BIMLFAIVARYVKEDNC7OXIFBRQZ5"
+ADYEN_KEY_ENDPOINT = (
+    "checkoutshopper/v1/clientKeys/live_VPX45BIMLFAIVARYVKEDNC7OXIFBRQZ5"
+)
 DEFAULT_APK_VERSION = "22.5.5"
 USER_AGENTS = [
     "TGTG/{} Dalvik/2.1.0 (Linux; U; Android 9; Nexus 5 Build/M4B30Z)",
@@ -444,27 +446,28 @@ class TgtgClient:
             return response.json()
         else:
             raise TgtgAPIError(response.status_code, response.content)
-    
+
     def pay_order(self, order_id, card_data: dict[str, str]):
         self.login()
         headers = {
-        'User-Agent': USER_AGENTS[2],
-        'Host': 'checkoutshopper-live.adyen.com',
-        'Connection': 'Keep-Alive'
+            "User-Agent": USER_AGENTS[2],
+            "Host": "checkoutshopper-live.adyen.com",
+            "Connection": "Keep-Alive",
         }
 
         url = urljoin(BASE_URL_ADYEN, ADYEN_KEY_ENDPOINT)
-        response = requests.request("GET", 
-                                    url, 
-                                    headers=headers, 
-                                    data={})
-
+        response = requests.request("GET", url, headers=headers, data={})
 
         ADYEN_KEY = response.json()["publicKey"]
 
         enc = encryptor(ADYEN_KEY)
-        enc.adyen_version = '_0_1_1'
-        card = enc.encrypt_card(card=card_data["card"], cvv=card_data["cvv"], month=card_data["month"], year=card_data["year"])
+        enc.adyen_version = "_0_1_1"
+        card = enc.encrypt_card(
+            card=card_data["card"],
+            cvv=card_data["cvv"],
+            month=card_data["month"],
+            year=card_data["year"],
+        )
 
         inner_payload = {
             "type": "scheme",
@@ -472,40 +475,38 @@ class TgtgClient:
             "encryptedExpiryMonth": card["month"],
             "encryptedExpiryYear": card["year"],
             "encryptedSecurityCode": card["cvv"],
-            "threeDS2SdkVersion": "2.2.10"
+            "threeDS2SdkVersion": "2.2.10",
         }
 
         inner_payload_str = json.dumps(inner_payload).replace("/", "\/")
         payload = {
             "authorization": {
-                "authorization_payload":{
+                "authorization_payload": {
                     "payload": inner_payload_str,
                     "payment_type": "CREDITCARD",
                     "save_payment_method": False,
-                    "type": "adyenAuthorizationPayload"
+                    "type": "adyenAuthorizationPayload",
                 },
                 "payment_provider": "ADYEN",
-                "return_url":"adyencheckout://com.app.tgtg.itemview"
-                
+                "return_url": "adyencheckout://com.app.tgtg.itemview",
             }
         }
 
         payload_str = json.dumps(payload)
 
-
         response = self.session.post(
-            url = self._get_url(PAY_ORDER_ENDPOINT.format(order_id)),
+            url=self._get_url(PAY_ORDER_ENDPOINT.format(order_id)),
             headers=self._headers,
             data=payload_str,
             proxies=self.proxies,
-            timeout=self.timeout
+            timeout=self.timeout,
         )
 
         if response.status_code == HTTPStatus.OK:
             return response.json()
         else:
             raise TgtgAPIError(response.status_code, response.content)
-        
+
     def get_payment_status(self, payment_id: str):
         self.login()
         response = self.session.post(
