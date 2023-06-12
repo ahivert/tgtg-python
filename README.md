@@ -33,29 +33,17 @@ pip install tgtg
 
 ### Retrieve tokens
 
-Build the client with your email
+Retrieve the token using CLI
 
-```python
-from tgtg import TgtgClient
-
-client = TgtgClient(email="<your_email>")
-credentials = client.get_credentials()
+```bash
+tgtg your@email.com
 ```
 
 You should receive an email from tgtg.
-The client will wait until you validate the login by clicking the link inside the email.
+The CLI will ask you to validate the email by clicking the link inside the email.
 
-Once you clicked the link, you will get credentials and be able to use them
-
-```python
-print(credentials)
-{
-    'access_token': '<your_access_token>',
-    'refresh_token': '<your_refresh_token>',
-    'user_id': '<your_user_id>',
-    'cookie': '<cookie>',
-}
-```
+Once you clicked the link, you can continue by pressing "Enter" and it will print
+your credentials. Copy it and give it to `TgtgClient`
 
 ### Build the client from tokens
 
@@ -64,6 +52,9 @@ from tgtg import TgtgClient
 
 client = TgtgClient(access_token="<access_token>", refresh_token="<refresh_token>", user_id="<user_id>", cookie="<cookie>")
 
+# or if you have your credentials as a dict
+
+client = TgtgClient(**{"access_token": "<access_token>", "refresh_token": "<refresh_token>", "user_id": "<user_id>", "cookie": "<cookie>"})
 ```
 
 ### Get items
@@ -491,6 +482,7 @@ print(order_status)
 </details>
 
 ### Abort an order
+
 ```python
 client.abort_order(order_id)
 ```
