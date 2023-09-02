@@ -196,7 +196,7 @@ class TgtgClient:
             if response.status_code == HTTPStatus.ACCEPTED:
                 sys.stdout.write(
                     "Check your mailbox on PC to continue... "
-                    "(Mailbox on mobile won't work, if you have installed tgtg app.)\n"
+                    "(Opening email on mobile won't work, if you have installed tgtg app.)\n"
                 )
                 time.sleep(POLLING_WAIT_TIME)
                 continue
