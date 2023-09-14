@@ -43,7 +43,7 @@ class TgtgClient:
         refresh_token=None,
         user_id=None,
         user_agent=None,
-        language="en-UK",
+        language="en-GB",
         proxies=None,
         timeout=None,
         last_time_token_refreshed=None,
