@@ -423,23 +423,22 @@ use-chardet-on-py3 = ["chardet (>=3.0.2,<6)"]
 
 [[package]]
 name = "responses"
-version = "0.23.3"
+version = "0.24.0"
 description = "A utility library for mocking out the `requests` Python library."
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.8"
 files = [
-    {file = "responses-0.23.3-py3-none-any.whl", hash = "sha256:e6fbcf5d82172fecc0aa1860fd91e58cbfd96cee5e96da5b63fa6eb3caa10dd3"},
-    {file = "responses-0.23.3.tar.gz", hash = "sha256:205029e1cb334c21cb4ec64fc7599be48b859a0fd381a42443cdd600bfe8b16a"},
+    {file = "responses-0.24.0-py3-none-any.whl", hash = "sha256:060be153c270c06fa4d22c1ef8865fdef43902eb595204deeef736cddb62d353"},
+    {file = "responses-0.24.0.tar.gz", hash = "sha256:3df82f7d4dcd3e5f61498181aadb4381f291da25c7506c47fe8cb68ce29203e7"},
 ]
 
 [package.dependencies]
 pyyaml = "*"
 requests = ">=2.30.0,<3.0"
-types-PyYAML = "*"
 urllib3 = ">=1.25.10,<3.0"
 
 [package.extras]
-tests = ["coverage (>=6.0.0)", "flake8", "mypy", "pytest (>=7.0.0)", "pytest-asyncio", "pytest-cov", "pytest-httpserver", "tomli", "tomli-w", "types-requests"]
+tests = ["coverage (>=6.0.0)", "flake8", "mypy", "pytest (>=7.0.0)", "pytest-asyncio", "pytest-cov", "pytest-httpserver", "tomli", "tomli-w", "types-PyYAML", "types-requests"]
 
 [[package]]
 name = "six"
@@ -514,17 +513,6 @@ files = [
 ]
 
 [[package]]
-name = "types-pyyaml"
-version = "6.0.12.8"
-description = "Typing stubs for PyYAML"
-optional = false
-python-versions = "*"
-files = [
-    {file = "types-PyYAML-6.0.12.8.tar.gz", hash = "sha256:19304869a89d49af00be681e7b267414df213f4eb89634c4495fa62e8f942b9f"},
-    {file = "types_PyYAML-6.0.12.8-py3-none-any.whl", hash = "sha256:5314a4b2580999b2ea06b2e5f9a7763d860d6e09cdf21c0e9561daa9cbd60178"},
-]
-
-[[package]]
 name = "urllib3"
 version = "1.26.9"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
@@ -564,4 +552,4 @@ testing = ["coverage (>=4)", "coverage-enable-subprocess (>=1)", "flaky (>=3)", 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "2b9daedeba025eaacd322376c1f763418fbf2378975395fe960956cfacf6c423"
+content-hash = "0c9ba7ffe22c90ad204e9bf32b893c07ffe78b585112a8caccbadae81097504c"
