@@ -145,13 +145,13 @@ testing = ["covdefaults (>=1.2.0)", "coverage (>=4)", "pytest (>=4)", "pytest-co
 
 [[package]]
 name = "freezegun"
-version = "1.3.0"
+version = "1.3.1"
 description = "Let your Python tests travel through time"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "freezegun-1.3.0-py3-none-any.whl", hash = "sha256:fc21de00b8e7f3dfb91414f876afe7f74b2f29ce9907bd81013bdbc7e8a632d0"},
-    {file = "freezegun-1.3.0.tar.gz", hash = "sha256:56cc5dc34de38fe28a4d19bea65bbd3af6fd66020df8141b92bdb45c9be9f503"},
+    {file = "freezegun-1.3.1-py3-none-any.whl", hash = "sha256:065e77a12624d05531afa87ade12a0b9bdb53495c4573893252a055b545ce3ea"},
+    {file = "freezegun-1.3.1.tar.gz", hash = "sha256:48984397b3b58ef5dfc645d6a304b0060f612bcecfdaaf45ce8aff0077a6cb6a"},
 ]
 
 [package.dependencies]
@@ -552,4 +552,4 @@ testing = ["coverage (>=4)", "coverage-enable-subprocess (>=1)", "flaky (>=3)", 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "4493112377c0085ca2a629a83c1137c1b5098fcd875e9a5d574b170dfa9632ab"
+content-hash = "be3e7cac885e1367552b036e6dea1c1ec22385555672e7c534b4b6fdc5e4bb5b"
