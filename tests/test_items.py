@@ -3,7 +3,7 @@ from urllib.parse import urljoin
 import pytest
 import responses
 
-from tgtg import API_ITEM_ENDPOINT, BASE_URL, TgtgClient
+from tgtg import API_ITEM_ENDPOINT, BASE_URL, FAVORITE_ITEM_ENDPOINT, TgtgClient
 from tgtg.exceptions import TgtgAPIError
 
 from .constants import tgtg_client_fake_tokens
@@ -75,7 +75,7 @@ def test_get_item_fail(refresh_tokens_response):
 def test_set_favorite(refresh_tokens_response):
     responses.add(
         responses.POST,
-        urljoin(BASE_URL, API_ITEM_ENDPOINT) + "1/setFavorite",
+        urljoin(BASE_URL, FAVORITE_ITEM_ENDPOINT.format(1)),
         json={},
         status=200,
     )
@@ -90,7 +90,7 @@ def test_set_favorite(refresh_tokens_response):
 def test_set_favorite_fail(refresh_tokens_response):
     responses.add(
         responses.POST,
-        urljoin(BASE_URL, API_ITEM_ENDPOINT) + "1/setFavorite",
+        urljoin(BASE_URL, FAVORITE_ITEM_ENDPOINT.format(1)),
         json={},
         status=400,
     )
