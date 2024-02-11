@@ -16,7 +16,7 @@ profile = "black"
 [tool.poetry.dev-dependencies]
 freezegun = "^1.4.0"
 pre-commit = "^3.5.0"
-pytest = "^7.4.2"
+pytest = "^8.0.0"
 pytest-cov = "^4.1.0"
 pytest-responses = "^0.5.1"
 responses = "^0.24.1"
