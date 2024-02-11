@@ -29,9 +29,8 @@ def test_login_with_tokens():
     assert client.cookie == "sweet sweet cookie"
 
 
-def test_refresh_token_after_some_time(refresh_tokens_response):
+def test_refresh_token_after_some_time(client):
     # login the client for the first time
-    client = TgtgClient(**tgtg_client_fake_tokens)
     client.login()
     new_access_token = "new_access_token"
     new_refresh_token = "new_refresh_token"
@@ -63,8 +62,7 @@ def test_refresh_token_after_some_time(refresh_tokens_response):
         assert client.refresh_token == new_refresh_token
 
 
-def test_refresh_token_fail(refresh_tokens_response):
-    client = TgtgClient(**tgtg_client_fake_tokens)
+def test_refresh_token_fail(client):
     client.login()
     old_access_token = client.access_token
     old_refresh_token = client.refresh_token
@@ -98,3 +96,13 @@ def test_login_empty_token_fail():
 def test_login_empty_user_id_fail():
     with pytest.raises(TypeError):
         TgtgClient(access_token="test_token", refresh_token="test_refres_toekn").login()
+
+
+def test_get_credentials(client):
+
+    assert client.get_credentials() == {
+        "access_token": "an_access_token",
+        "cookie": "sweet sweet cookie",
+        "refresh_token": "a_refresh_token",
+        "user_id": "user_id",
+    }

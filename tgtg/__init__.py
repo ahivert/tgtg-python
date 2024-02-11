@@ -313,7 +313,7 @@ class TgtgClient:
             timeout=self.timeout,
         )
         if response.status_code == HTTPStatus.OK:
-            return response.json()["mobile_bucket"]["items"]
+            return response.json().get("mobile_bucket", {}).get("items", [])
         else:
             raise TgtgAPIError(response.status_code, response.content)
 
