@@ -91,7 +91,7 @@ print(items)
     {
         "item": {
             "item_id": "64346",
-            "price": {"code": "EUR", "minor_units": 499, "decimals": 2},
+            "item_price": {"code": "EUR", "minor_units": 499, "decimals": 2},
             "sales_taxes": [],
             "tax_amount": {"code": "EUR", "minor_units": 0, "decimals": 2},
             "price_excluding_taxes": {"code": "EUR", "minor_units": 499, "decimals": 2},
