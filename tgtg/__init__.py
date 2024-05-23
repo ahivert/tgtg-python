@@ -80,8 +80,6 @@ class TgtgClient:
             self.version = DEFAULT_APK_VERSION
             sys.stdout.write("Failed to get last version\n")
 
-        sys.stdout.write(f"Using version {self.version}\n")
-
         return random.choice(USER_AGENTS).format(self.version)
 
     def _get_url(self, path):
