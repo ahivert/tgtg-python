@@ -24,6 +24,7 @@ CREATE_ORDER_ENDPOINT = "order/v7/create/"
 ABORT_ORDER_ENDPOINT = "order/v7/{}/abort"
 ORDER_STATUS_ENDPOINT = "order/v7/{}/status"
 API_BUCKET_ENDPOINT = "discover/v1/bucket"
+MANUFACTURERITEM_ENDPOINT = "manufactureritem/v2/"
 DEFAULT_APK_VERSION = "22.5.5"
 USER_AGENTS = [
     "TGTG/{} Dalvik/2.1.0 (Linux; U; Android 9; Nexus 5 Build/M4B30Z)",
@@ -432,6 +433,35 @@ class TgtgClient:
             self._get_url(INACTIVE_ORDER_ENDPOINT),
             headers=self._headers,
             json={"paging": {"page": page, "size": page_size}, "user_id": self.user_id},
+            proxies=self.proxies,
+            timeout=self.timeout,
+        )
+        if response.status_code == HTTPStatus.OK:
+            return response.json()
+        else:
+            raise TgtgAPIError(response.status_code, response.content)
+
+    def get_manufactureitem(self):
+        self.login()
+        response = self.session.post(
+            self._get_url(MANUFACTURERITEM_ENDPOINT),
+            headers=self._headers,
+            json={
+                "action_types_accepted": ["QUERY"],
+                "display_types_accepted": ["LIST", "FILL"],
+                "element_types_accepted": [
+                    "ITEM",
+                    "HIGHLIGHTED_ITEM",
+                    "MANUFACTURER_STORY_CARD",
+                    "DUO_ITEMS",
+                    "DUO_ITEMS_V2",
+                    "TEXT",
+                    "PARCEL_TEXT",
+                    "NPS",
+                    "SMALL_CARDS_CAROUSEL",
+                    "ITEM_CARDS_CAROUSEL",
+                ],
+            },
             proxies=self.proxies,
             timeout=self.timeout,
         )
