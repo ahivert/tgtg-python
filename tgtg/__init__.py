@@ -38,6 +38,7 @@ POLLING_WAIT_TIME = 5  # Seconds
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
+
 class TgtgClient:
     def __init__(
         self,
