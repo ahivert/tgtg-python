@@ -1,4 +1,5 @@
 import datetime
+import logging
 import random
 import sys
 import time
@@ -34,6 +35,8 @@ DEFAULT_ACCESS_TOKEN_LIFETIME = 3600 * 4  # 4 hours
 MAX_POLLING_TRIES = 24  # 24 * POLLING_WAIT_TIME = 2 minutes
 POLLING_WAIT_TIME = 5  # Seconds
 
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 class TgtgClient:
     def __init__(
@@ -79,6 +82,8 @@ class TgtgClient:
         except Exception:
             self.version = DEFAULT_APK_VERSION
             sys.stdout.write("Failed to get last version\n")
+
+        logger.debug(f"Using version {self.version}\n")
 
         return random.choice(USER_AGENTS).format(self.version)
 
