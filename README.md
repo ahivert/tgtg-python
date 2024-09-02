@@ -57,6 +57,17 @@ print(credentials)
 }
 ```
 
+#### No polling
+You can avoid the polling mechanism by providing the polling_id directly
+
+```python
+client = TgtgClient(email="<your_email>")
+polling_id = client.request_polling_id()
+# You now click in the link you received by email
+client.complete_login_with_polling_id(cached_polling_id)
+credentials = client.get_credentials()
+```
+
 ### Build the client from tokens
 
 ```python

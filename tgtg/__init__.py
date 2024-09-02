@@ -152,36 +152,40 @@ class TgtgClient:
         if self._already_logged:
             self._refresh_token()
         else:
-            response = self.session.post(
-                self._get_url(AUTH_BY_EMAIL_ENDPOINT),
-                headers=self._headers,
-                json={
-                    "device_type": self.device_type,
-                    "email": self.email,
-                },
-                proxies=self.proxies,
-                timeout=self.timeout,
-            )
-            if response.status_code == HTTPStatus.OK:
-                first_login_response = response.json()
-                if first_login_response["state"] == "TERMS":
-                    raise TgtgPollingError(
-                        f"This email {self.email} is not linked to a tgtg account. "
-                        "Please signup with this email first."
-                    )
-                elif first_login_response["state"] == "WAIT":
-                    self.start_polling(first_login_response["polling_id"])
-                else:
-                    raise TgtgLoginError(response.status_code, response.content)
-            else:
-                if response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
-                    raise TgtgAPIError(
-                        response.status_code, "Too many requests. Try again later."
-                    )
-                else:
-                    raise TgtgLoginError(response.status_code, response.content)
+            polling_id = self.request_polling_id()
+            self.complete_login_with_polling_id(polling_id)
 
-    def start_polling(self, polling_id):
+    def request_polling_id(self):
+        response = self.session.post(
+            self._get_url(AUTH_BY_EMAIL_ENDPOINT),
+            headers=self._headers,
+            json={
+                "device_type": self.device_type,
+                "email": self.email,
+            },
+            proxies=self.proxies,
+            timeout=self.timeout,
+        )
+        if response.status_code == HTTPStatus.OK:
+            first_login_response = response.json()
+            if first_login_response["state"] == "TERMS":
+                raise TgtgPollingError(
+                    f"This email {self.email} is not linked to a tgtg account. "
+                    "Please signup with this email first."
+                )
+            elif first_login_response["state"] == "WAIT":
+                return first_login_response["polling_id"]
+            else:
+                raise TgtgLoginError(response.status_code, response.content)
+        else:
+            if response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
+                raise TgtgAPIError(
+                    response.status_code, "Too many requests. Try again later."
+                )
+            else:
+                raise TgtgLoginError(response.status_code, response.content)
+
+    def complete_login_with_polling_id(self, polling_id):
         for _ in range(MAX_POLLING_TRIES):
             response = self.session.post(
                 self._get_url(AUTH_POLLING_ENDPOINT),
