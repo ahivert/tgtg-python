@@ -399,7 +399,7 @@ class TgtgClient:
             self.access_token = response.json()["login_response"]["access_token"]
             self.refresh_token = response.json()["login_response"]["refresh_token"]
             self.last_time_token_refreshed = datetime.datetime.now()
-            ]
+            
             return self
         else:
             raise TgtgAPIError(response.status_code, response.content)
