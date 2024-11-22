@@ -136,12 +136,7 @@ class TgtgClient:
             raise TgtgAPIError(response.status_code, response.content)
 
     def login(self):
-        if not (
-            self.email
-            or self.access_token
-            and self.refresh_token
-            and self.cookie
-        ):
+        if not (self.email or self.access_token and self.refresh_token and self.cookie):
             raise TypeError(
                 "You must provide at least email or access_token, refresh_token and cookie"
             )
@@ -399,7 +394,7 @@ class TgtgClient:
             self.access_token = response.json()["login_response"]["access_token"]
             self.refresh_token = response.json()["login_response"]["refresh_token"]
             self.last_time_token_refreshed = datetime.datetime.now()
-            
+
             return self
         else:
             raise TgtgAPIError(response.status_code, response.content)
@@ -431,4 +426,3 @@ class TgtgClient:
             return response.json()
         else:
             raise TgtgAPIError(response.status_code, response.content)
-
