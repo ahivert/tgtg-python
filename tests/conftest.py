@@ -29,10 +29,7 @@ def auth_polling_response():
     responses.add(
         responses.POST,
         urljoin(BASE_URL, AUTH_POLLING_ENDPOINT),
-        json={
-            "access_token": "an_access_token",
-            "refresh_token": "a_refresh_token"
-        },
+        json={"access_token": "an_access_token", "refresh_token": "a_refresh_token"},
         status=200,
     )
 

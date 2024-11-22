@@ -22,7 +22,7 @@ def test_signup_ok():
     client = TgtgClient().signup_by_email(email="test@test.com")
     assert client.access_token == "an_access_token"
     assert client.refresh_token == "a_refresh_token"
-\
+
 
 def test_signup_fail():
     responses.add(
