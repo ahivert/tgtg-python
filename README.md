@@ -52,7 +52,6 @@ print(credentials)
 {
     'access_token': '<your_access_token>',
     'refresh_token': '<your_refresh_token>',
-    'user_id': '<your_user_id>',
     'cookie': '<cookie>',
 }
 ```
@@ -62,7 +61,7 @@ print(credentials)
 ```python
 from tgtg import TgtgClient
 
-client = TgtgClient(access_token="<access_token>", refresh_token="<refresh_token>", user_id="<user_id>", cookie="<cookie>")
+client = TgtgClient(access_token="<access_token>", refresh_token="<refresh_token>", cookie="<cookie>")
 
 ```
 
@@ -434,7 +433,6 @@ print(order)
 {
   "id": "<order_id>",
   "item_id": "<item_id_that_was_ordered>",
-  "user_id": "<your_user_id>",
   "state": "RESERVED",
   "order_line": {
     "quantity": 1,
@@ -483,7 +481,6 @@ print(order_status)
 {
   "id": "<order_id>",
   "item_id": "<item_id_that_was_ordered>",
-  "user_id": "<your_user_id>",
   "state": "RESERVED"
 }
 ```
