@@ -6,7 +6,7 @@
 
 Python client that help you to talk with [TooGoodToGo](https://toogoodtogo.com) API.
 
-Python version: 3.8+
+Python version: 3.9+
 
 Handle:
 
@@ -488,6 +488,7 @@ print(order_status)
 </details>
 
 ### Abort an order
+
 ```python
 client.abort_order(order_id)
 ```
