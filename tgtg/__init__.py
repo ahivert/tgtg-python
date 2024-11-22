@@ -290,7 +290,6 @@ class TgtgClient:
         data = {
             "origin": {"latitude": latitude, "longitude": longitude},
             "radius": radius,
-            "user_id": self.user_id,
             "paging": {"page": page, "size": page_size},
             "bucket": {"filler_type": "Favorites"},
         }

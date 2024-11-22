@@ -31,8 +31,7 @@ def auth_polling_response():
         urljoin(BASE_URL, AUTH_POLLING_ENDPOINT),
         json={
             "access_token": "an_access_token",
-            "refresh_token": "a_refresh_token",
-            "startup_data": {"user": {"user_id": 1234}},
+            "refresh_token": "a_refresh_token"
         },
         status=200,
     )
