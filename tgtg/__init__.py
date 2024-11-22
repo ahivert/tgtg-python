@@ -14,10 +14,10 @@ from .exceptions import TgtgAPIError, TgtgLoginError, TgtgPollingError
 BASE_URL = "https://apptoogoodtogo.com/api/"
 API_ITEM_ENDPOINT = "item/v8/"
 FAVORITE_ITEM_ENDPOINT = "user/favorite/v1/{}/update"
-AUTH_BY_EMAIL_ENDPOINT = "auth/v3/authByEmail"
-AUTH_POLLING_ENDPOINT = "auth/v3/authByRequestPollingId"
-SIGNUP_BY_EMAIL_ENDPOINT = "auth/v3/signUpByEmail"
-REFRESH_ENDPOINT = "auth/v3/token/refresh"
+AUTH_BY_EMAIL_ENDPOINT = "auth/v4/authByEmail"
+AUTH_POLLING_ENDPOINT = "auth/v4/authByRequestPollingId"
+SIGNUP_BY_EMAIL_ENDPOINT = "auth/v4/signUpByEmail"
+REFRESH_ENDPOINT = "auth/v4/token/refresh"
 ACTIVE_ORDER_ENDPOINT = "order/v7/active"
 INACTIVE_ORDER_ENDPOINT = "order/v7/inactive"
 CREATE_ORDER_ENDPOINT = "order/v7/create/"
@@ -42,7 +42,6 @@ class TgtgClient:
         email=None,
         access_token=None,
         refresh_token=None,
-        user_id=None,
         user_agent=None,
         language="en-GB",
         proxies=None,
@@ -58,7 +57,6 @@ class TgtgClient:
 
         self.access_token = access_token
         self.refresh_token = refresh_token
-        self.user_id = user_id
         self.cookie = cookie
 
         self.last_time_token_refreshed = last_time_token_refreshed
@@ -92,7 +90,6 @@ class TgtgClient:
         return {
             "access_token": self.access_token,
             "refresh_token": self.refresh_token,
-            "user_id": self.user_id,
             "cookie": self.cookie,
         }
 
@@ -113,7 +110,7 @@ class TgtgClient:
 
     @property
     def _already_logged(self):
-        return bool(self.access_token and self.refresh_token and self.user_id)
+        return bool(self.access_token and self.refresh_token)
 
     def _refresh_token(self):
         if (
@@ -143,11 +140,10 @@ class TgtgClient:
             self.email
             or self.access_token
             and self.refresh_token
-            and self.user_id
             and self.cookie
         ):
             raise TypeError(
-                "You must provide at least email or access_token, refresh_token, user_id and cookie"
+                "You must provide at least email or access_token, refresh_token and cookie"
             )
         if self._already_logged:
             self._refresh_token()
@@ -207,7 +203,6 @@ class TgtgClient:
                 self.access_token = login_response["access_token"]
                 self.refresh_token = login_response["refresh_token"]
                 self.last_time_token_refreshed = datetime.datetime.now()
-                self.user_id = login_response["startup_data"]["user"]["user_id"]
                 self.cookie = response.headers["Set-Cookie"]
                 return
             else:
@@ -245,7 +240,6 @@ class TgtgClient:
 
         # fields are sorted like in the app
         data = {
-            "user_id": self.user_id,
             "origin": {"latitude": latitude, "longitude": longitude},
             "radius": radius,
             "page_size": page_size,
@@ -278,7 +272,7 @@ class TgtgClient:
         response = self.session.post(
             urljoin(self._get_url(API_ITEM_ENDPOINT), str(item_id)),
             headers=self._headers,
-            json={"user_id": self.user_id, "origin": None},
+            json={"origin": None},
             proxies=self.proxies,
             timeout=self.timeout,
         )
@@ -405,8 +399,6 @@ class TgtgClient:
             self.access_token = response.json()["login_response"]["access_token"]
             self.refresh_token = response.json()["login_response"]["refresh_token"]
             self.last_time_token_refreshed = datetime.datetime.now()
-            self.user_id = response.json()["login_response"]["startup_data"]["user"][
-                "user_id"
             ]
             return self
         else:
@@ -417,7 +409,7 @@ class TgtgClient:
         response = self.session.post(
             self._get_url(ACTIVE_ORDER_ENDPOINT),
             headers=self._headers,
-            json={"user_id": self.user_id},
+            json={},
             proxies=self.proxies,
             timeout=self.timeout,
         )
@@ -431,7 +423,7 @@ class TgtgClient:
         response = self.session.post(
             self._get_url(INACTIVE_ORDER_ENDPOINT),
             headers=self._headers,
-            json={"paging": {"page": page, "size": page_size}, "user_id": self.user_id},
+            json={"paging": {"page": page, "size": page_size}},
             proxies=self.proxies,
             timeout=self.timeout,
         )
@@ -439,3 +431,4 @@ class TgtgClient:
             return response.json()
         else:
             raise TgtgAPIError(response.status_code, response.content)
+
