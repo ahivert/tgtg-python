@@ -390,11 +390,11 @@ class TgtgClient:
             timeout=self.timeout,
         )
         if response.status_code == HTTPStatus.OK:
-            first_signup_response = response.json()
-            if first_signup_response["state"] == "WAIT":
-                self.start_polling(first_signup_response["polling_id"])
-            else:
-                raise TgtgAPIError(response.status_code, response.content)
+            self.access_token = response.json()["login_response"]["access_token"]
+            self.refresh_token = response.json()["login_response"]["refresh_token"]
+            self.last_time_token_refreshed = datetime.datetime.now()
+
+            return self
         else:
             raise TgtgAPIError(response.status_code, response.content)
 
