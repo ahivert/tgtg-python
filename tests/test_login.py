@@ -88,21 +88,10 @@ def test_login_empty_fail():
         TgtgClient().login()
 
 
-def test_login_empty_token_fail():
-    with pytest.raises(TypeError):
-        TgtgClient(user_id=1234).login()
-
-
-def test_login_empty_user_id_fail():
-    with pytest.raises(TypeError):
-        TgtgClient(access_token="test_token", refresh_token="test_refres_toekn").login()
-
-
 def test_get_credentials(client):
 
     assert client.get_credentials() == {
         "access_token": "an_access_token",
         "cookie": "sweet sweet cookie",
         "refresh_token": "a_refresh_token",
-        "user_id": "user_id",
     }

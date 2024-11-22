@@ -15,7 +15,6 @@ def test_signup_ok():
             "login_response": {
                 "access_token": "an_access_token",
                 "refresh_token": "a_refresh_token",
-                "startup_data": {"user": {"user_id": 1234}},
             }
         },
         status=200,
@@ -23,7 +22,6 @@ def test_signup_ok():
     client = TgtgClient().signup_by_email(email="test@test.com")
     assert client.access_token == "an_access_token"
     assert client.refresh_token == "a_refresh_token"
-    assert client.user_id == 1234
 
 
 def test_signup_fail():
