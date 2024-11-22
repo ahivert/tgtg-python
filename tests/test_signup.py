@@ -38,6 +38,7 @@ def test_signup_ok():
     assert client.access_token == "an_access_token"
     assert client.refresh_token == "a_refresh_token"
 
+
 def test_signup_fail():
     responses.add(
         responses.POST,
