@@ -12,7 +12,7 @@ Handle:
 
 - create an account (`/api/auth/vX/signUpByEmail`)
 - login (`/api/auth/vX/authByEmail`)
-- refresh token (`/api/auth/vX/token/refresh`)
+- refresh token (`token/v1/refresh`)
 - list stores (`/api/item/vX`)
 - get a store (`/api/item/vX/:id`)
 - get favorites (`/api/discover/vX/bucket`)
