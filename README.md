@@ -582,7 +582,7 @@ This project uses poetry so you will need to install poetry locally to use follo
 commands.
 
 ```
-pip install poetry --user
+pipx install poetry
 poetry install
 ```
 
@@ -590,7 +590,7 @@ This project uses [pre-commit](https://pre-commit.com/) to format/check all the
 code before each commit automatically.
 
 ```
-pip install pre-commit --user
+pipx install pre-commit
 pre-commit install
 ```
 
