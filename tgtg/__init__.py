@@ -4,6 +4,7 @@ import sys
 import time
 from http import HTTPStatus
 from urllib.parse import urljoin
+import uuid
 
 import requests
 
