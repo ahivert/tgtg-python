@@ -2,9 +2,9 @@ import datetime
 import random
 import sys
 import time
+import uuid
 from http import HTTPStatus
 from urllib.parse import urljoin
-import uuid
 
 import requests
 
