@@ -2,6 +2,7 @@ import datetime
 import random
 import sys
 import time
+import uuid
 from http import HTTPStatus
 from urllib.parse import urljoin
 
@@ -61,6 +62,7 @@ class TgtgClient:
 
         self.last_time_token_refreshed = last_time_token_refreshed
         self.access_token_lifetime = access_token_lifetime
+        self.correlation_id = str(uuid.uuid4())
 
         self.device_type = device_type
 
@@ -101,6 +103,7 @@ class TgtgClient:
             "accept-language": self.language,
             "content-type": "application/json; charset=utf-8",
             "user-agent": self.user_agent,
+            "x-correlation-id": self.correlation_id,
         }
         if self.cookie:
             headers["Cookie"] = self.cookie
