@@ -62,7 +62,7 @@ class TgtgClient:
 
         self.last_time_token_refreshed = last_time_token_refreshed
         self.access_token_lifetime = access_token_lifetime
-        self.correlation_id = str(uuid.uuid4())
+        self.correlation_id = None
 
         self.device_type = device_type
 
@@ -103,8 +103,9 @@ class TgtgClient:
             "accept-language": self.language,
             "content-type": "application/json; charset=utf-8",
             "user-agent": self.user_agent,
-            "x-correlation-id": self.correlation_id,
         }
+        if self.correlation_id:
+            headers["x-correlation-id"] = self.correlation_id
         if self.cookie:
             headers["Cookie"] = self.cookie
         if self.access_token:
@@ -122,7 +123,8 @@ class TgtgClient:
             <= self.access_token_lifetime
         ):
             return
-
+        correlation_id = str(self.correlation_id)
+        self.correlation_id = None
         response = self.session.post(
             self._get_url(REFRESH_ENDPOINT),
             json={"refresh_token": self.refresh_token},
@@ -130,6 +132,10 @@ class TgtgClient:
             proxies=self.proxies,
             timeout=self.timeout,
         )
+        if correlation_id is None:
+            self.correlation_id = str(uuid.uuid4())
+        else:
+            self.correlation_id = correlation_id
         if response.status_code == HTTPStatus.OK:
             self.access_token = response.json()["access_token"]
             self.refresh_token = response.json()["refresh_token"]
@@ -202,6 +208,7 @@ class TgtgClient:
                 self.refresh_token = login_response["refresh_token"]
                 self.last_time_token_refreshed = datetime.datetime.now()
                 self.cookie = response.headers["Set-Cookie"]
+                self.correlation_id = str(uuid.uuid4())
                 return
             else:
                 if response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
