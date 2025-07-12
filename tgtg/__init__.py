@@ -103,8 +103,9 @@ class TgtgClient:
             "accept-language": self.language,
             "content-type": "application/json; charset=utf-8",
             "user-agent": self.user_agent,
-            "x-correlation-id": self.correlation_id,
         }
+        if not self.email:
+            headers["x-correlation-id"] = self.correlation_id
         if self.cookie:
             headers["Cookie"] = self.cookie
         if self.access_token:
@@ -146,16 +147,17 @@ class TgtgClient:
         if self._already_logged:
             self._refresh_token()
         else:
-            response = self.session.post(
-                self._get_url(AUTH_BY_EMAIL_ENDPOINT),
-                headers=self._headers,
-                json={
-                    "device_type": self.device_type,
-                    "email": self.email,
-                },
-                proxies=self.proxies,
-                timeout=self.timeout,
-            )
+            for _ in range(2):  # doing twice the request to try to bypass captcha
+                response = self.session.post(
+                    self._get_url(AUTH_BY_EMAIL_ENDPOINT),
+                    headers=self._headers,
+                    json={
+                        "device_type": self.device_type,
+                        "email": self.email,
+                    },
+                    proxies=self.proxies,
+                    timeout=self.timeout,
+                )
             if response.status_code == HTTPStatus.OK:
                 first_login_response = response.json()
                 if first_login_response["state"] == "TERMS":
