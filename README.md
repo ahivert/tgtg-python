@@ -22,6 +22,7 @@ Handle:
 - get the status of an order (`/api/order/vX/:id/status`)
 - get active orders (`/api/order/vX/active`)
 - get inactive orders (`/api/order/vX/inactive`)
+- get delivery items (`api/manufactureritem/v2`)
 
 ## Install
 
