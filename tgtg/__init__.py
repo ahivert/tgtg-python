@@ -433,15 +433,19 @@ class TgtgClient:
         else:
             raise TgtgAPIError(response.status_code, response.content)
 
-    def get_manufacturer_items(
-        self
-    ):
+    def get_manufacturer_items(self):
         self.login()
 
         data = {
-            "display_types_accepted": [ "LIST" ],
-            "element_types_accepted": [ "ITEM", "NPS", "TEXT", "DUO_ITEMS", "MANUFACTURER_STORY_CARD"],
-            "action_types_accepted": []
+            "display_types_accepted": ["LIST"],
+            "element_types_accepted": [
+                "ITEM",
+                "NPS",
+                "TEXT",
+                "DUO_ITEMS",
+                "MANUFACTURER_STORY_CARD",
+            ],
+            "action_types_accepted": [],
         }
         response = self.session.post(
             self._get_url(MANUFACTURER_ITEM_ENDPOINT),
