@@ -25,7 +25,7 @@ CREATE_ORDER_ENDPOINT = "order/v8/create/"
 ABORT_ORDER_ENDPOINT = "order/v8/{}/abort"
 ORDER_STATUS_ENDPOINT = "order/v8/{}/status"
 API_BUCKET_ENDPOINT = "discover/v1/bucket"
-MANUFACTURER_ITEM_ENDPOINT = "manufactureritem/v2/"
+MANUFACTURER_ITEM_ENDPOINT = "manufactureritem/v2"
 
 DEFAULT_APK_VERSION = "24.11.0"
 USER_AGENTS = [
