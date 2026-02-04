@@ -258,9 +258,7 @@ class TgtgClient:
                     raise TgtgLoginError(response.status_code, response.content)
 
     def start_polling(self, polling_id):
-        sys.stdout.write(
-            "Check your email for a login PIN code.\n"
-        )
+        sys.stdout.write("Check your email for a login PIN code.\n")
         pin = input("Enter PIN from email: ").strip()
         if pin:
             return self._auth_by_pin(polling_id, pin)
