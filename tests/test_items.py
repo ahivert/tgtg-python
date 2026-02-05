@@ -132,7 +132,10 @@ def test_set_favorite_fail(client):
 
 def test_get_manufacturing_items_fail(client):
     responses.add(
-        responses.POST, urljoin(BASE_URL, MANUFACTURER_ITEM_ENDPOINT), json={}, status=400
+        responses.POST,
+        urljoin(BASE_URL, MANUFACTURER_ITEM_ENDPOINT),
+        json={},
+        status=400,
     )
     with pytest.raises(TgtgAPIError):
         client.get_manufacturer_items()
@@ -140,10 +143,19 @@ def test_get_manufacturing_items_fail(client):
 
 def test_get_manufacturing_items_success(client):
     responses.add(
-        responses.POST, urljoin(BASE_URL, MANUFACTURER_ITEM_ENDPOINT), json={}, status=200
+        responses.POST,
+        urljoin(BASE_URL, MANUFACTURER_ITEM_ENDPOINT),
+        json={},
+        status=200,
     )
     assert client.get_manufacturer_items() == {}
     assert (
-        len([call for call in responses.calls if MANUFACTURER_ITEM_ENDPOINT in call.request.url])
+        len(
+            [
+                call
+                for call in responses.calls
+                if MANUFACTURER_ITEM_ENDPOINT in call.request.url
+            ]
+        )
         == 1
     )
