@@ -50,19 +50,13 @@ def test_refresh_token_after_some_time(client):
     )
 
     # token lifetime is ok, no need to refresh
-    with freeze_time(
-        datetime.datetime.now()
-        + datetime.timedelta(seconds=DEFAULT_ACCESS_TOKEN_LIFETIME)
-    ):
+    with freeze_time(datetime.datetime.now() + datetime.timedelta(seconds=DEFAULT_ACCESS_TOKEN_LIFETIME)):
         client.login()
         assert client.access_token != new_access_token
         assert client.refresh_token != new_refresh_token
 
     # token lifetime expired, refresh needed
-    with freeze_time(
-        datetime.datetime.now()
-        + datetime.timedelta(seconds=DEFAULT_ACCESS_TOKEN_LIFETIME + 1)
-    ):
+    with freeze_time(datetime.datetime.now() + datetime.timedelta(seconds=DEFAULT_ACCESS_TOKEN_LIFETIME + 1)):
         client.login()
         assert client.access_token == new_access_token
         assert client.refresh_token == new_refresh_token
@@ -79,10 +73,7 @@ def test_refresh_token_fail(client):
         json={},
         status=400,
     )
-    with freeze_time(
-        datetime.datetime.now()
-        + datetime.timedelta(seconds=DEFAULT_ACCESS_TOKEN_LIFETIME + 1)
-    ):
+    with freeze_time(datetime.datetime.now() + datetime.timedelta(seconds=DEFAULT_ACCESS_TOKEN_LIFETIME + 1)):
         with pytest.raises(TgtgAPIError):
             client.login()
         assert old_access_token == client.access_token

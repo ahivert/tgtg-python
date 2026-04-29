@@ -24,10 +24,7 @@ def test_get_items_success(client):
         status=200,
     )
     assert client.get_items() == []
-    assert (
-        len([call for call in responses.calls if API_ITEM_ENDPOINT in call.request.url])
-        == 1
-    )
+    assert len([call for call in responses.calls if API_ITEM_ENDPOINT in call.request.url]) == 1
 
 
 def test_get_items_custom_user_agent(refresh_tokens_response):
@@ -40,31 +37,21 @@ def test_get_items_custom_user_agent(refresh_tokens_response):
     custom_user_agent = "test"
     client = TgtgClient(user_agent=custom_user_agent, **tgtg_client_fake_tokens)
     client.get_items()
-    assert (
-        len([call for call in responses.calls if API_ITEM_ENDPOINT in call.request.url])
-        == 1
-    )
+    assert len([call for call in responses.calls if API_ITEM_ENDPOINT in call.request.url]) == 1
     for call in responses.calls:
         assert call.request.headers["user-agent"] == custom_user_agent
 
 
 def test_get_items_fail(client):
-    responses.add(
-        responses.POST, urljoin(BASE_URL, API_ITEM_ENDPOINT), json={}, status=400
-    )
+    responses.add(responses.POST, urljoin(BASE_URL, API_ITEM_ENDPOINT), json={}, status=400)
     with pytest.raises(TgtgAPIError):
         client.get_items()
 
 
 def test_get_item_success(client):
-    responses.add(
-        responses.POST, urljoin(BASE_URL, API_ITEM_ENDPOINT) + "1", json={}, status=200
-    )
+    responses.add(responses.POST, urljoin(BASE_URL, API_ITEM_ENDPOINT) + "1", json={}, status=200)
     assert client.get_item(1) == {}
-    assert (
-        len([call for call in responses.calls if API_ITEM_ENDPOINT in call.request.url])
-        == 1
-    )
+    assert len([call for call in responses.calls if API_ITEM_ENDPOINT in call.request.url]) == 1
 
 
 def test_get_item_success_with_data(client):
@@ -85,16 +72,12 @@ def test_get_item_success_with_data(client):
 
 
 def test_get_item_fail(client):
-    responses.add(
-        responses.POST, urljoin(BASE_URL, API_ITEM_ENDPOINT) + "1", json={}, status=400
-    )
+    responses.add(responses.POST, urljoin(BASE_URL, API_ITEM_ENDPOINT) + "1", json={}, status=400)
     with pytest.raises(TgtgAPIError):
         client.get_item(1)
 
 
-@pytest.mark.parametrize(
-    "data,expected", [({}, []), ({"mobile_bucket": {"items": []}}, [])]
-)
+@pytest.mark.parametrize("data,expected", [({}, []), ({"mobile_bucket": {"items": []}}, [])])
 def test_get_favorites(client, data, expected):
     responses.add(
         responses.POST,
@@ -104,16 +87,7 @@ def test_get_favorites(client, data, expected):
     )
     favorites = client.get_favorites()
     assert favorites == expected
-    assert (
-        len(
-            [
-                call
-                for call in responses.calls
-                if API_BUCKET_ENDPOINT in call.request.url
-            ]
-        )
-        == 1
-    )
+    assert len([call for call in responses.calls if API_BUCKET_ENDPOINT in call.request.url]) == 1
 
 
 def test_get_favorites_with_items(client):
@@ -200,16 +174,7 @@ def test_set_favorite(client):
         status=200,
     )
     assert client.set_favorite(1, True) is None
-    assert (
-        len(
-            [
-                call
-                for call in responses.calls
-                if FAVORITE_ITEM_ENDPOINT.format(1) in call.request.url
-            ]
-        )
-        == 1
-    )
+    assert len([call for call in responses.calls if FAVORITE_ITEM_ENDPOINT.format(1) in call.request.url]) == 1
 
 
 def test_set_favorite_success(client):
@@ -267,13 +232,4 @@ def test_get_manufacturing_items_success(client):
         status=200,
     )
     assert client.get_manufacturer_items() == {}
-    assert (
-        len(
-            [
-                call
-                for call in responses.calls
-                if MANUFACTURER_ITEM_ENDPOINT in call.request.url
-            ]
-        )
-        == 1
-    )
+    assert len([call for call in responses.calls if MANUFACTURER_ITEM_ENDPOINT in call.request.url]) == 1

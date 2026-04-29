@@ -209,8 +209,7 @@ class TgtgClient:
     def _refresh_token(self):
         if (
             self.last_time_token_refreshed
-            and (datetime.datetime.now() - self.last_time_token_refreshed).seconds
-            <= self.access_token_lifetime
+            and (datetime.datetime.now() - self.last_time_token_refreshed).seconds <= self.access_token_lifetime
         ):
             return
 
@@ -228,9 +227,7 @@ class TgtgClient:
 
     def login(self):
         if not (self.email or self.access_token and self.refresh_token and self.cookie):
-            raise TypeError(
-                "You must provide at least email or access_token, refresh_token and cookie"
-            )
+            raise TypeError("You must provide at least email or access_token, refresh_token and cookie")
         if self._already_logged:
             self._refresh_token()
         else:
@@ -254,9 +251,7 @@ class TgtgClient:
                     raise TgtgLoginError(response.status_code, response.content)
             else:
                 if response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
-                    raise TgtgAPIError(
-                        response.status_code, "Too many requests. Try again later."
-                    )
+                    raise TgtgAPIError(response.status_code, "Too many requests. Try again later.")
                 else:
                     raise TgtgLoginError(response.status_code, response.content)
 
@@ -292,15 +287,11 @@ class TgtgClient:
                 return
             else:
                 if response.status_code == HTTPStatus.TOO_MANY_REQUESTS:
-                    raise TgtgAPIError(
-                        response.status_code, "Too many requests. Try again later."
-                    )
+                    raise TgtgAPIError(response.status_code, "Too many requests. Try again later.")
                 else:
                     raise TgtgLoginError(response.status_code, response.content)
 
-        raise TgtgPollingError(
-            f"Max retries ({MAX_POLLING_TRIES * POLLING_WAIT_TIME} seconds) reached. Try again."
-        )
+        raise TgtgPollingError(f"Max retries ({MAX_POLLING_TRIES * POLLING_WAIT_TIME} seconds) reached. Try again.")
 
     def _auth_by_pin(self, polling_id, pin):
         response = self._post(

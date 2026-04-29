@@ -15,12 +15,14 @@ jobs:
       matrix:
         python: [ "3.9", "3.10", "3.11", "3.12", "3.13", "3.14" ]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6.0.2
+      - uses: actions/setup-python@v6.2.0
         with:
           python-version: ${{ matrix.python }}
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.1.0
       - name: Install dependencies
-        run: pip install poetry && poetry install
+        run: uv sync --all-extras
       - name: Run lint
         run: make lint
       - name: Run tests

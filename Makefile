@@ -1,8 +1,9 @@
 test:
-	poetry run pytest
+	uv run --all-extras pytest
 
 lint:
-	poetry run pre-commit run -a
+	uv run --all-extras ruff check .
+	uv run --all-extras ruff format --check .
 
 publish:
-	poetry publish --build
+	uv build && uv publish
