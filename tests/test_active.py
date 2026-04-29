@@ -36,6 +36,19 @@ def test_get_active_fail(client):
         client.get_active()
 
 
+def test_get_active_with_session_cookie(client):
+    """Test get_active handles session cookies properly."""
+    responses.add(
+        responses.POST,
+        urljoin(BASE_URL, ACTIVE_ORDER_ENDPOINT),
+        json={"orders": []},
+        status=200,
+        headers={"set-cookie": "session_id=abc123; path=/"},
+    )
+    result = client.get_active()
+    assert result == {"orders": []}
+
+
 def test_get_inactive_success(client):
     responses.add(
         responses.POST,
@@ -62,3 +75,15 @@ def test_get_inactive_fail(client):
     )
     with pytest.raises(TgtgAPIError):
         client.get_inactive()
+
+
+def test_get_inactive_with_pagination(client):
+    """Test get_inactive handles pagination parameters."""
+    responses.add(
+        responses.POST,
+        urljoin(BASE_URL, INACTIVE_ORDER_ENDPOINT),
+        json={"orders": [], "paging": {"page": 1, "size": 20}},
+        status=200,
+    )
+    result = client.get_inactive(page=1, page_size=20)
+    assert "paging" in result

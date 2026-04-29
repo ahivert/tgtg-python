@@ -5,8 +5,14 @@ import pytest
 import responses
 from freezegun import freeze_time
 
-from tgtg import BASE_URL, DEFAULT_ACCESS_TOKEN_LIFETIME, REFRESH_ENDPOINT, TgtgClient
-from tgtg.exceptions import TgtgAPIError
+from tgtg import (
+    AUTH_BY_EMAIL_ENDPOINT,
+    BASE_URL,
+    DEFAULT_ACCESS_TOKEN_LIFETIME,
+    REFRESH_ENDPOINT,
+    TgtgClient,
+)
+from tgtg.exceptions import TgtgAPIError, TgtgLoginError, TgtgPollingError
 
 from .constants import tgtg_client_fake_tokens
 
@@ -95,3 +101,45 @@ def test_get_credentials(client):
         "cookie": "sweet sweet cookie",
         "refresh_token": "a_refresh_token",
     }
+
+
+def test_login_with_terms_state():
+    """Test login fails for new users who haven't accepted terms."""
+    responses.add(
+        responses.POST,
+        urljoin(BASE_URL, AUTH_BY_EMAIL_ENDPOINT),
+        json={"state": "TERMS"},
+        status=200,
+    )
+    client = TgtgClient(email="newuser@test.com")
+    with pytest.raises(TgtgPollingError) as exc_info:
+        client.login()
+    assert "not linked to a tgtg account" in str(exc_info.value)
+
+
+def test_login_with_unknown_state():
+    """Test login fails with unknown state."""
+    responses.add(
+        responses.POST,
+        urljoin(BASE_URL, AUTH_BY_EMAIL_ENDPOINT),
+        json={"state": "UNKNOWN_STATE"},
+        status=200,
+    )
+    client = TgtgClient(email="test@test.com")
+    with pytest.raises(TgtgLoginError) as exc_info:
+        client.login()
+    assert exc_info.value.args[0] == 200
+
+
+def test_login_with_too_many_requests():
+    """Test login fails with too many requests error."""
+    responses.add(
+        responses.POST,
+        urljoin(BASE_URL, AUTH_BY_EMAIL_ENDPOINT),
+        json={},
+        status=429,  # TOO_MANY_REQUESTS
+    )
+    client = TgtgClient(email="test@test.com")
+    with pytest.raises(TgtgAPIError) as exc_info:
+        client.login()
+    assert "Too many requests" in exc_info.value.args[1]
