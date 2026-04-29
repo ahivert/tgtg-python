@@ -27,7 +27,10 @@ CREATE_ORDER_ENDPOINT = "order/v8/create/"
 ABORT_ORDER_ENDPOINT = "order/v8/{}/abort"
 ORDER_STATUS_ENDPOINT = "order/v8/{}/status"
 API_BUCKET_ENDPOINT = "discover/v1/bucket"
+MANUFACTURER_ITEM_ENDPOINT = "manufactureritem/v2"
 DATADOME_SDK_URL = "https://api-sdk.datadome.co/sdk/"
+
+
 DEFAULT_APK_VERSION = "24.11.0"
 USER_AGENTS = [
     "TGTG/{} Dalvik/2.1.0 (Linux; U; Android 9; Nexus 5 Build/M4B30Z)",
@@ -498,6 +501,29 @@ class TgtgClient:
         response = self._post(
             self._get_url(INACTIVE_ORDER_ENDPOINT),
             json={"paging": {"page": page, "size": page_size}},
+        )
+        if response.status_code == HTTPStatus.OK:
+            return response.json()
+        else:
+            raise TgtgAPIError(response.status_code, response.content)
+
+    def get_manufacturer_items(self):
+        self.login()
+
+        data = {
+            "display_types_accepted": ["LIST"],
+            "element_types_accepted": [
+                "ITEM",
+                "NPS",
+                "TEXT",
+                "DUO_ITEMS",
+                "MANUFACTURER_STORY_CARD",
+            ],
+            "action_types_accepted": [],
+        }
+        response = self._post(
+            self._get_url(MANUFACTURER_ITEM_ENDPOINT),
+            json=data,
         )
         if response.status_code == HTTPStatus.OK:
             return response.json()
