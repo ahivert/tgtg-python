@@ -21,9 +21,7 @@ def test_create_order(client):
         status=200,
     )
     order = client.create_order(1, 1)
-    order_calls = [
-        call for call in responses.calls if CREATE_ORDER_ENDPOINT in call.request.url
-    ]
+    order_calls = [call for call in responses.calls if CREATE_ORDER_ENDPOINT in call.request.url]
     assert len([order_calls]) == 1
     assert json.loads(order_calls[0].request.body) == {"item_count": 1}
     assert order == {}
@@ -83,16 +81,7 @@ def test_get_order_status(client):
         status=200,
     )
     client.get_order_status(1)
-    assert (
-        len(
-            [
-                call
-                for call in responses.calls
-                if ORDER_STATUS_ENDPOINT.format(1) in call.request.url
-            ]
-        )
-        == 1
-    )
+    assert len([call for call in responses.calls if ORDER_STATUS_ENDPOINT.format(1) in call.request.url]) == 1
 
 
 def test_get_order_status_success(client):
@@ -132,16 +121,7 @@ def test_abort_order(client):
         status=200,
     )
     client.abort_order(1)
-    assert (
-        len(
-            [
-                call
-                for call in responses.calls
-                if ABORT_ORDER_ENDPOINT.format(1) in call.request.url
-            ]
-        )
-        == 1
-    )
+    assert len([call for call in responses.calls if ABORT_ORDER_ENDPOINT.format(1) in call.request.url]) == 1
 
 
 def test_abort_order_success(client):

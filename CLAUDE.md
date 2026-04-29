@@ -1,6 +1,6 @@
-# CLAUDE.md
+# AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to agents when working with code in this repository.
 
 ## Project Overview
 
@@ -9,29 +9,23 @@ Unofficial Python client for the [TooGoodToGo](https://toogoodtogo.com) API. Pub
 ## Commands
 
 ```bash
-# Install dependencies (requires poetry)
-# Option 1: if pipx is available
-pipx install poetry
-
-# Option 2: via venv (if pipx/poetry not available)
-python3 -m venv .venv
-source .venv/bin/activate
-pip install poetry
+# Install dependencies (requires uv)
+pipx install uv
 
 # Then install project deps
-poetry install
+uv sync
 
 # Run all tests (with coverage)
-make test              # or: poetry run pytest
+make test
 
 # Run a single test file
-poetry run pytest tests/test_login.py
+uv run pytest tests/test_login.py
 
 # Run a single test function
-poetry run pytest tests/test_login.py::test_login_with_tokens
+uv run pytest tests/test_login.py::test_login_success
 
-# Run linting (black, isort, flake8)
-make lint              # or: poetry run pre-commit run -a
+# Run linting (ruff check + format)
+make lint
 
 # Build and publish to PyPI
 make publish
@@ -39,14 +33,13 @@ make publish
 
 ## Code Style
 
-- Formatter: **Black**
-- Import sorting: **isort** (profile: black)
-- Linter: **flake8** (max-line-length: 119, max-complexity: 10)
-- All enforced via pre-commit hooks
+- Formatter: **Ruff** (uses Black-compatible formatting)
+- Linter: **Ruff** (selects E, F, W rules)
+- All enforced via `make lint`
 
 ## Architecture
 
-The entire library is a single class `TgtgClient` in `tgtg/__init__.py` (~500 lines). There are no subpackages or complex abstractions.
+The entire library is a single class `TgtgClient` in `tgtg/__init__.py` (~522 lines). There are no subpackages or complex abstractions.
 
 ### Key components
 
@@ -79,7 +72,7 @@ Auth endpoints use `v5`, item endpoints use `v8`, order endpoints use `v8`, toke
 ## Testing
 
 - Framework: **pytest** with **responses** library for HTTP mocking
-- Coverage: branch coverage enabled, configured in `setup.cfg` (`addopts = --cov=tgtg`)
+- Coverage: branch coverage enabled, configured in `pyproject.toml` (`addopts = --cov=tgtg`)
 - Tests in `tests/` use fixtures from `conftest.py` that mock auth/refresh endpoints
 - `tests/constants.py` contains expected API response property lists and fake token credentials
 - `test_api.py` contains integration tests marked `@pytest.mark.withoutresponses` that hit the real API (requires `TGTG_EMAIL` env var)

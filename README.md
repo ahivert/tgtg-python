@@ -579,23 +579,21 @@ client.signup_by_email(email="<your_email>")
 
 ## Developers
 
-This project uses poetry so you will need to install poetry locally to use following
-commands.
+This project uses [uv](https://github.com/astral-sh/uv) for dependency management and
+[ruff](https://github.com/astral-sh/ruff) for linting and formatting.
 
 ```
-pipx install poetry
-poetry install
+pipx install uv
+uv sync
 ```
 
-This project uses [pre-commit](https://pre-commit.com/) to format/check all the
-code before each commit automatically.
+Run linting and formatting:
 
 ```
-pipx install pre-commit
-pre-commit install
+make lint
 ```
 
-Run this command to run all tests:
+Run all tests:
 
 ```
 make test

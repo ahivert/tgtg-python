@@ -15,9 +15,7 @@ from .constants import GLOBAL_PROPERTIES, ITEM_PROPERTIES, STORE_PROPERTIES
 class TestLoginRequired:
     def test_get_items(self):
         client = TgtgClient(email=os.environ["TGTG_EMAIL"])
-        data = client.get_items(
-            favorites_only=False, radius=10, latitude=48.126, longitude=-1.723
-        )
+        data = client.get_items(favorites_only=False, radius=10, latitude=48.126, longitude=-1.723)
         assert len(data) == 20
         for property in GLOBAL_PROPERTIES:
             assert property in data[0]
