@@ -17,7 +17,7 @@ dev = [
     "pytest>=8.3.4,<9.0",
     "pytest-cov>=7.1.0,<8.0",
     "pytest-responses>=0.5.1,<0.6",
-    "ruff>=0.15.12",
+    "ruff>=0.15.13",
 ]
 
 [build-system]
