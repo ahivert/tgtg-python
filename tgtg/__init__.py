@@ -14,7 +14,7 @@ from tgtg.google_play_scraper import get_last_apk_version
 from .exceptions import TgtgAPIError, TgtgLoginError, TgtgPollingError
 
 BASE_URL = "https://apptoogoodtogo.com/api/"
-API_ITEM_ENDPOINT = "item/v8/"
+API_ITEM_ENDPOINT = "item/v9/"
 FAVORITE_ITEM_ENDPOINT = "user/favorite/v1/{}/update"
 AUTH_BY_EMAIL_ENDPOINT = "auth/v5/authByEmail"
 AUTH_POLLING_ENDPOINT = "auth/v5/authByRequestPollingId"
