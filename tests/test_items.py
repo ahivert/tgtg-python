@@ -63,7 +63,7 @@ def test_get_item_success_with_data(client):
     }
     responses.add(
         responses.POST,
-        urljoin(BASE_URL, "item/v8/123"),
+        urljoin(BASE_URL, "item/v9/123"),
         json=item_data,
         status=200,
     )
