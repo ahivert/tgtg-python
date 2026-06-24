@@ -15,8 +15,8 @@ jobs:
       matrix:
         python: [ "3.9", "3.10", "3.11", "3.12", "3.13", "3.14" ]
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6.2.0
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6.3.0
         with:
           python-version: ${{ matrix.python }}
       - name: Install uv
