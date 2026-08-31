@@ -51,9 +51,9 @@ Once you clicked the link, you will get credentials and be able to use them
 ```python
 print(credentials)
 {
-    'access_token': '<your_access_token>',
-    'refresh_token': '<your_refresh_token>',
-    'cookie': '<cookie>',
+    "access_token": "<your_access_token>",
+    "refresh_token": "<your_refresh_token>",
+    "cookie": "<cookie>",
 }
 ```
 
@@ -63,7 +63,6 @@ print(credentials)
 from tgtg import TgtgClient
 
 client = TgtgClient(access_token="<access_token>", refresh_token="<refresh_token>", cookie="<cookie>")
-
 ```
 
 ### Get items
@@ -432,34 +431,18 @@ print(order)
 
 ```python
 {
-  "id": "<order_id>",
-  "item_id": "<item_id_that_was_ordered>",
-  "state": "RESERVED",
-  "order_line": {
-    "quantity": 1,
-    "item_price_including_taxes": {
-      "code": "EUR",
-      "minor_units": 600,
-      "decimals": 2
+    "id": "<order_id>",
+    "item_id": "<item_id_that_was_ordered>",
+    "state": "RESERVED",
+    "order_line": {
+        "quantity": 1,
+        "item_price_including_taxes": {"code": "EUR", "minor_units": 600, "decimals": 2},
+        "item_price_excluding_taxes": {"code": "EUR", "minor_units": 550, "decimals": 2},
+        "total_price_including_taxes": {"code": "EUR", "minor_units": 600, "decimals": 2},
+        "total_price_excluding_taxes": {"code": "EUR", "minor_units": 550, "decimals": 2},
     },
-    "item_price_excluding_taxes": {
-      "code": "EUR",
-      "minor_units": 550,
-      "decimals": 2
-    },
-    "total_price_including_taxes": {
-      "code": "EUR",
-      "minor_units": 600,
-      "decimals": 2
-    },
-    "total_price_excluding_taxes": {
-      "code": "EUR",
-      "minor_units": 550,
-      "decimals": 2
-    }
-  },
-  "reserved_at": "2023-01-01T10:30:32.331280392",
-  "order_type": "MAGICBAG"
+    "reserved_at": "2023-01-01T10:30:32.331280392",
+    "order_type": "MAGICBAG",
 }
 ```
 
@@ -479,11 +462,7 @@ print(order_status)
 <summary>Example response</summary>
 
 ```python
-{
-  "id": "<order_id>",
-  "item_id": "<item_id_that_was_ordered>",
-  "state": "RESERVED"
-}
+{"id": "<order_id>", "item_id": "<item_id_that_was_ordered>", "state": "RESERVED"}
 ```
 
 </details>
@@ -516,31 +495,28 @@ client.get_inactive(page=0, page_size=20)
 To e.g. sum up all orders you have ever made:
 
 ```python
-    orders = []
-    page = 0
-    while inactive := client.get_inactive(page=page, page_size=200):
-        orders += inactive["orders"]
-        if not inactive["has_more"]:
-            break
+orders = []
+page = 0
+while inactive := client.get_inactive(page=page, page_size=200):
+    orders += inactive["orders"]
+    if not inactive["has_more"]:
+        break
 
-    redeemed_orders = [x for x in orders if x["state"] == "REDEEMED"]
-    redeemed_items = sum([x["quantity"] for x in redeemed_orders])
+redeemed_orders = [x for x in orders if x["state"] == "REDEEMED"]
+redeemed_items = sum([x["quantity"] for x in redeemed_orders])
 
-    # if you bought in multiple currencies this will need improvements
-    money_spend = sum(
-        [
-            x["price_including_taxes"]["minor_units"]
-            / (10 ** x["price_including_taxes"]["decimals"])
-            for x in redeemed_orders
-        ]
-    )
+# if you bought in multiple currencies this will need improvements
+money_spend = sum(
+    [
+        x["price_including_taxes"]["minor_units"] / (10 ** x["price_including_taxes"]["decimals"])
+        for x in redeemed_orders
+    ]
+)
 
-    print(f"Total numbers of orders: {len(orders)}")
-    print(f"Total numbers of picked up orders: {len(redeemed_orders)}")
-    print(f"Total numbers of items picked up: {redeemed_items}")
-    print(
-        f"Total money spend: ~{money_spend:.2f}{redeemed_orders[0]['price_including_taxes']['code']}"
-    )
+print(f"Total numbers of orders: {len(orders)}")
+print(f"Total numbers of picked up orders: {len(redeemed_orders)}")
+print(f"Total numbers of items picked up: {redeemed_items}")
+print(f"Total money spend: ~{money_spend:.2f}{redeemed_orders[0]['price_including_taxes']['code']}")
 ```
 
 ### Get favorites
