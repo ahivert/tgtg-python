@@ -8,6 +8,7 @@ from http import HTTPStatus
 from urllib.parse import urljoin, urlsplit
 
 import requests
+from requests.cookies import CookieConflictError
 
 from tgtg.google_play_scraper import get_last_apk_version
 
@@ -42,9 +43,26 @@ MAX_POLLING_TRIES = 24  # 24 * POLLING_WAIT_TIME = 2 minutes
 POLLING_WAIT_TIME = 5  # Seconds
 
 
+COOKIE_ATTRIBUTES = frozenset(
+    {"path", "domain", "expires", "max-age", "secure", "httponly", "samesite", "version", "comment"}
+)
+
+
 def _generate_datadome_cid():
     chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~_"
     return "".join(random.choice(chars) for _ in range(120))
+
+
+def _parse_cookie_header(raw):
+    """Extract the name=value pairs from a raw Cookie/Set-Cookie header, dropping attributes."""
+    cookies = {}
+    for segment in re.split(r"[;,]", raw):
+        name, separator, value = segment.partition("=")
+        name = name.strip()
+        if not separator or not name or name.lower() in COOKIE_ATTRIBUTES:
+            continue
+        cookies[name] = value.strip()
+    return cookies
 
 
 class TgtgClient:
@@ -116,11 +134,28 @@ class TgtgClient:
             "user-agent": self.user_agent,
             "x-correlation-id": self.correlation_id,
         }
-        if self.cookie:
-            headers["Cookie"] = self.cookie
+        cookie_header = self._cookie_header()
+        if cookie_header:
+            headers["Cookie"] = cookie_header
         if self.access_token:
             headers["authorization"] = f"Bearer {self.access_token}"
         return headers
+
+    def _cookie_header(self):
+        """Merge the stored credential cookie with the session jar.
+
+        ``http.cookiejar`` refuses to add jar cookies when a request already carries a Cookie
+        header, so the datadome cookie would silently never be sent for authenticated calls.
+        """
+        cookies = _parse_cookie_header(self.cookie) if self.cookie else {}
+        try:
+            datadome = self.session.cookies.get("datadome")
+        except CookieConflictError:
+            datadome = None
+        if datadome:
+            cookies = {name: value for name, value in cookies.items() if name.lower() != "datadome"}
+            cookies["datadome"] = datadome
+        return "; ".join(f"{name}={value}" for name, value in cookies.items())
 
     @property
     def _already_logged(self):
