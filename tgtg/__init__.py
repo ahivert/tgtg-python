@@ -346,8 +346,10 @@ class TgtgClient:
             raise TgtgAPIError(response.status_code, response.content)
 
     def login(self):
-        if not (self.email or self.access_token and self.refresh_token and self.cookie):
-            raise TypeError("You must provide at least email or access_token, refresh_token and cookie")
+        # The cookie is a datadome/session value, not a credential: a client that has none
+        # simply fetches a fresh one, so it must not block logging in.
+        if not (self.email or (self.access_token and self.refresh_token)):
+            raise TypeError("You must provide at least email or access_token and refresh_token")
         if self._already_logged:
             self._refresh_token()
         else:

@@ -128,6 +128,27 @@ def test_correlation_id_can_be_pinned():
     assert generated != pinned and len(generated) == 36
 
 
+def test_login_works_without_a_stored_cookie():
+    """A freshly reset client has no cookie yet; that must not stop it from refreshing."""
+    responses.add(
+        responses.POST,
+        urljoin(BASE_URL, REFRESH_ENDPOINT),
+        json={"access_token": "new_at", "refresh_token": "new_rt"},
+        status=200,
+        adding_headers={"set-cookie": "datadome=FRESH_DD; Path=/"},
+    )
+    client = TgtgClient(access_token="at", refresh_token="rt", cookie="", user_agent="ua")
+
+    client.login()
+
+    assert client.access_token == "new_at"
+
+
+def test_login_still_requires_tokens():
+    with pytest.raises(TypeError):
+        TgtgClient(user_agent="ua").login()
+
+
 @pytest.mark.parametrize("profile", DEVICE_PROFILES)
 def test_datadome_fingerprint_matches_the_user_agent(profile, datadome_response):
     """A handset that claims one device in its UA and another to the SDK is trivially spottable."""
