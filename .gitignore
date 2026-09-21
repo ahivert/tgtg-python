@@ -125,3 +125,5 @@ dmypy.json
 
 # vscode
 .vscode
+# credentials written by examples/watch_favorites.py
+tgtg_credentials.json
