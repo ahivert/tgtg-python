@@ -241,8 +241,18 @@ class TgtgClient:
                         path="/",
                         secure=True,
                     )
-        except Exception:
-            sys.stdout.write("Failed to fetch DataDome cookie\n")
+                    return
+            # Swallowing the reason here once cost hours of guessing: say what went wrong.
+            sys.stdout.write(f"DataDome SDK returned no cookie (status {data.get('status')})\n")
+        except requests.HTTPError as exc:
+            sys.stdout.write(f"DataDome SDK refused the handshake: HTTP {exc.response.status_code}\n")
+        except requests.Timeout:
+            sys.stdout.write("DataDome SDK timed out\n")
+        # JSONDecodeError subclasses RequestException as well, so it has to come first.
+        except (requests.JSONDecodeError, ValueError):
+            sys.stdout.write("DataDome SDK returned an unreadable response\n")
+        except requests.RequestException as exc:
+            sys.stdout.write(f"DataDome SDK unreachable: {type(exc).__name__}\n")
 
     def _ensure_datadome_cookie(self, request_url):
         if "datadome" not in self.session.cookies:

@@ -114,3 +114,27 @@ def test_refused_datadome_cookie_is_not_kept(datadome_response):
 
     assert "BURNED_DD" not in client.cookie
     assert "session_id=abc123" in client.cookie
+
+
+@pytest.mark.parametrize(
+    "registered,expected",
+    [
+        ({"json": {"status": 200, "cookie": FRESH_DATADOME}, "status": 200}, "datadome=FRESH_DD"),
+        ({"json": {}, "status": 403}, "refused the handshake: HTTP 403"),
+        ({"json": {}, "status": 429}, "refused the handshake: HTTP 429"),
+        ({"json": {"status": 403}, "status": 200}, "returned no cookie (status 403)"),
+        ({"body": "not json", "status": 200}, "unreadable response"),
+    ],
+)
+def test_datadome_handshake_failures_say_why(registered, expected, capsys):
+    """A silent 'Failed to fetch DataDome cookie' hides exactly the detail that matters."""
+    responses.add(responses.POST, DATADOME_SDK_URL, **registered)
+    client = TgtgClient(access_token="at", refresh_token="rt", user_agent="ua")
+
+    client._fetch_datadome_cookie("https://apptoogoodtogo.com/api/item/v9/")
+
+    output = capsys.readouterr().out
+    if expected.startswith("datadome="):
+        assert client.session.cookies.get("datadome") == "FRESH_DD"
+    else:
+        assert expected in output
