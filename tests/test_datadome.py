@@ -116,6 +116,15 @@ def test_refused_datadome_cookie_is_not_kept(datadome_response):
     assert "session_id=abc123" in client.cookie
 
 
+def test_correlation_id_can_be_pinned():
+    """A persisted correlation id keeps one device looking like one device across restarts."""
+    pinned = "11111111-2222-3333-4444-555555555555"
+    assert TgtgClient(correlation_id=pinned, user_agent="ua").correlation_id == pinned
+
+    generated = TgtgClient(user_agent="ua").correlation_id
+    assert generated != pinned and len(generated) == 36
+
+
 @pytest.mark.parametrize(
     "registered,expected",
     [

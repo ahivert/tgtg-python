@@ -80,6 +80,7 @@ class TgtgClient:
         access_token_lifetime=DEFAULT_ACCESS_TOKEN_LIFETIME,
         device_type="ANDROID",
         cookie=None,
+        correlation_id=None,
     ):
         self.base_url = url
 
@@ -91,7 +92,9 @@ class TgtgClient:
 
         self.last_time_token_refreshed = last_time_token_refreshed
         self.access_token_lifetime = access_token_lifetime
-        self.correlation_id = str(uuid.uuid4())
+        # Stable across restarts when the caller persists it: a new id on every launch
+        # makes one device look like a fleet of fresh ones.
+        self.correlation_id = correlation_id or str(uuid.uuid4())
 
         self.device_type = device_type
 
