@@ -59,6 +59,34 @@ def test_datadome_cookie_is_sent_alongside_stored_cookie(datadome_response):
         assert "Path" not in header
 
 
+def test_stored_datadome_cookie_is_reused(datadome_response):
+    """A datadome cookie the server already blessed beats minting a new one on every start."""
+    client = _build_client("Datadome=STORED_DD; Path=/")
+    client.get_active()
+
+    header = _cookie_headers_sent()[0]
+    assert "STORED_DD" in header
+    assert "FRESH_DD" not in header
+    assert not [call for call in responses.calls if DATADOME_SDK_URL in call.request.url], (
+        "the SDK handshake should be skipped when a stored cookie is available"
+    )
+
+
+def test_datadome_cookie_is_refetched_after_403(datadome_response):
+    """A 403 invalidates the stored cookie and the retry must carry the fresh one."""
+    client = _build_client("Datadome=STORED_DD; Path=/")
+    url = client._get_url(ACTIVE_ORDER_ENDPOINT)
+    responses.replace(responses.POST, url, json={}, status=403)
+    responses.add(responses.POST, url, json={"orders": []}, status=200)
+
+    client._post(url, json={})
+
+    first, retry = _cookie_headers_sent()[0], _cookie_headers_sent()[1]
+    assert "STORED_DD" in first
+    assert "datadome=FRESH_DD" in retry
+    assert "STORED_DD" not in retry
+
+
 def test_stored_cookie_still_sent_without_datadome():
     """With no datadome cookie available the stored credentials are still sent, minus attributes."""
     client = _build_client("session_id=abc123; Path=/; Secure; HttpOnly")

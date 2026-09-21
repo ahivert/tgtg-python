@@ -101,6 +101,7 @@ class TgtgClient:
         self.timeout = timeout
         self.session = requests.Session()
         self.session.headers = self._headers
+        self._seed_datadome_cookie()
 
     def _get_user_agent(self):
         try:
@@ -160,6 +161,26 @@ class TgtgClient:
     @property
     def _already_logged(self):
         return bool(self.access_token and self.refresh_token)
+
+    def _seed_datadome_cookie(self):
+        """Reuse a stored datadome cookie instead of minting a fresh one on every start.
+
+        A cookie the server itself issued and that already carried authenticated calls is
+        worth more than a newly minted SDK one, and skipping the handshake is one less
+        bot signal per process.
+        """
+        if not self.cookie:
+            return
+        for name, value in _parse_cookie_header(self.cookie).items():
+            if name.lower() == "datadome" and value:
+                self.session.cookies.set(
+                    "datadome",
+                    value,
+                    domain=f".{urlsplit(self.base_url).hostname}",
+                    path="/",
+                    secure=True,
+                )
+                return
 
     def _fetch_datadome_cookie(self, request_url):
         """Fetch a DataDome cookie from the SDK endpoint, mimicking the Android app."""
