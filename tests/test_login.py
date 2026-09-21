@@ -62,6 +62,26 @@ def test_refresh_token_after_some_time(client):
         assert client.refresh_token == new_refresh_token
 
 
+def test_refresh_token_after_more_than_one_day(client):
+    """timedelta.seconds drops whole days, so a day-old token looked fresh and was never refreshed."""
+    client.login()
+    new_access_token = "new_access_token"
+    new_refresh_token = "new_refresh_token"
+
+    responses.replace(
+        responses.POST,
+        urljoin(BASE_URL, REFRESH_ENDPOINT),
+        json={"access_token": new_access_token, "refresh_token": new_refresh_token},
+        status=200,
+        headers={"set-cookie": "sweet sweet cookie"},
+    )
+
+    with freeze_time(datetime.datetime.now() + datetime.timedelta(days=1, seconds=1)):
+        client.login()
+        assert client.access_token == new_access_token
+        assert client.refresh_token == new_refresh_token
+
+
 def test_refresh_token_fail(client):
     client.login()
     old_access_token = client.access_token

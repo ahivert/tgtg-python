@@ -244,7 +244,9 @@ class TgtgClient:
     def _refresh_token(self):
         if (
             self.last_time_token_refreshed
-            and (datetime.datetime.now() - self.last_time_token_refreshed).seconds <= self.access_token_lifetime
+            # .seconds would drop whole days, keeping a >24h old token alive forever
+            and int((datetime.datetime.now() - self.last_time_token_refreshed).total_seconds())
+            <= self.access_token_lifetime
         ):
             return
 
