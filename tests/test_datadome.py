@@ -101,3 +101,16 @@ def test_stored_cookie_still_sent_without_datadome():
 def test_parse_cookie_header_drops_attributes_and_splits_joined_headers():
     raw = "a=1; Path=/; Expires=Wed, 21 Oct 2015 07:28:00 GMT, b=2; Secure; HttpOnly"
     assert _parse_cookie_header(raw) == {"a": "1", "b": "2"}
+
+
+def test_refused_datadome_cookie_is_not_kept(datadome_response):
+    """A cookie that got a 403 must be dropped from credentials, not seeded again next start."""
+    client = _build_client("session_id=abc123; Datadome=BURNED_DD")
+    url = client._get_url(ACTIVE_ORDER_ENDPOINT)
+    responses.replace(responses.POST, url, json={}, status=403)
+    responses.add(responses.POST, url, json={"orders": []}, status=200)
+
+    client._post(url, json={})
+
+    assert "BURNED_DD" not in client.cookie
+    assert "session_id=abc123" in client.cookie

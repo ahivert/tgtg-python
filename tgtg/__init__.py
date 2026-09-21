@@ -182,6 +182,15 @@ class TgtgClient:
                 )
                 return
 
+    def _drop_stored_datadome(self):
+        """Forget a refused datadome cookie so it is not persisted and seeded again."""
+        if not self.cookie:
+            return
+        remaining = {
+            name: value for name, value in _parse_cookie_header(self.cookie).items() if name.lower() != "datadome"
+        }
+        self.cookie = "; ".join(f"{name}={value}" for name, value in remaining.items())
+
     def _fetch_datadome_cookie(self, request_url):
         """Fetch a DataDome cookie from the SDK endpoint, mimicking the Android app."""
         cid = _generate_datadome_cid()
@@ -252,6 +261,7 @@ class TgtgClient:
         if response.status_code == 403:
             # Invalidate and retry with fresh DataDome cookie
             self.session.cookies.clear()
+            self._drop_stored_datadome()
             self._fetch_datadome_cookie(url)
             response = self.session.post(
                 url,
