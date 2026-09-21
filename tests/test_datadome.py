@@ -1,4 +1,4 @@
-from urllib.parse import urljoin
+from urllib.parse import unquote_plus, urljoin
 
 import pytest
 import responses
@@ -7,9 +7,12 @@ from tgtg import (
     ACTIVE_ORDER_ENDPOINT,
     BASE_URL,
     DATADOME_SDK_URL,
+    DEVICE_PROFILES,
     REFRESH_ENDPOINT,
+    USER_AGENTS,
     TgtgClient,
     _parse_cookie_header,
+    _profile_for_user_agent,
 )
 
 FRESH_DATADOME = "datadome=FRESH_DD; Max-Age=31536000; Domain=.apptoogoodtogo.com; Path=/; Secure"
@@ -123,6 +126,30 @@ def test_correlation_id_can_be_pinned():
 
     generated = TgtgClient(user_agent="ua").correlation_id
     assert generated != pinned and len(generated) == 36
+
+
+@pytest.mark.parametrize("profile", DEVICE_PROFILES)
+def test_datadome_fingerprint_matches_the_user_agent(profile, datadome_response):
+    """A handset that claims one device in its UA and another to the SDK is trivially spottable."""
+    user_agent = profile["user_agent"].format("26.9.5")
+    client = TgtgClient(access_token="at", refresh_token="rt", user_agent=user_agent)
+    client._fetch_datadome_cookie("https://apptoogoodtogo.com/api/item/v9/")
+
+    sent = [call for call in responses.calls if DATADOME_SDK_URL in call.request.url]
+    assert len(sent) == 1
+    payload = dict(pair.split("=", 1) for pair in sent[0].request.body.split("&"))
+    assert unquote_plus(payload["mdl"]) == profile["model"]
+    assert payload["osr"] == profile["os_release"]
+    assert payload["osv"] == profile["os_version"]
+    assert payload["osn"] == profile["os_name"]
+    assert payload["screen_x"] == profile["screen_x"]
+    assert unquote_plus(payload["ua"]) == user_agent
+
+
+def test_every_generated_user_agent_has_a_matching_profile():
+    for template in USER_AGENTS:
+        user_agent = template.format("26.9.5")
+        assert _profile_for_user_agent(user_agent)["model"] in user_agent
 
 
 @pytest.mark.parametrize(

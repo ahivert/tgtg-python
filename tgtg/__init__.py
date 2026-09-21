@@ -33,11 +33,41 @@ DATADOME_SDK_URL = "https://api-sdk.datadome.co/sdk/"
 
 
 DEFAULT_APK_VERSION = "24.11.0"
-USER_AGENTS = [
-    "TGTG/{} Dalvik/2.1.0 (Linux; U; Android 9; Nexus 5 Build/M4B30Z)",
-    "TGTG/{} Dalvik/2.1.0 (Linux; U; Android 10; SM-G935F Build/NRD90M)",
-    "TGTG/{} Dalvik/2.1.0 (Linux; Android 12; SM-G920V Build/MMB29K)",
+# A real handset reports the same device through its user agent and through the DataDome
+# SDK. Keeping the two in sync removes an obvious contradiction in the fingerprint.
+DEVICE_PROFILES = [
+    {
+        "user_agent": "TGTG/{} Dalvik/2.1.0 (Linux; U; Android 14; Pixel 7 Pro Build/UQ1A.240205.004)",
+        "model": "Pixel 7 Pro",
+        "os_name": "UPSIDE_DOWN_CAKE",
+        "os_release": "14",
+        "os_version": "34",
+        "screen_x": "1440",
+        "screen_y": "3120",
+        "screen_d": "3.5",
+    },
+    {
+        "user_agent": "TGTG/{} Dalvik/2.1.0 (Linux; U; Android 14; SM-S911B Build/UP1A.231005.007)",
+        "model": "SM-S911B",
+        "os_name": "UPSIDE_DOWN_CAKE",
+        "os_release": "14",
+        "os_version": "34",
+        "screen_x": "1080",
+        "screen_y": "2340",
+        "screen_d": "2.625",
+    },
+    {
+        "user_agent": "TGTG/{} Dalvik/2.1.0 (Linux; U; Android 13; Pixel 6a Build/TQ3A.230901.001)",
+        "model": "Pixel 6a",
+        "os_name": "TIRAMISU",
+        "os_release": "13",
+        "os_version": "33",
+        "screen_x": "1080",
+        "screen_y": "2400",
+        "screen_d": "2.75",
+    },
 ]
+USER_AGENTS = [profile["user_agent"] for profile in DEVICE_PROFILES]
 DEFAULT_ACCESS_TOKEN_LIFETIME = 3600 * 4  # 4 hours
 MAX_POLLING_TRIES = 24  # 24 * POLLING_WAIT_TIME = 2 minutes
 POLLING_WAIT_TIME = 5  # Seconds
@@ -51,6 +81,14 @@ COOKIE_ATTRIBUTES = frozenset(
 def _generate_datadome_cid():
     chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~_"
     return "".join(random.choice(chars) for _ in range(120))
+
+
+def _profile_for_user_agent(user_agent):
+    """Find the device profile a user agent belongs to, so the SDK payload matches it."""
+    for profile in DEVICE_PROFILES:
+        if profile["model"] in (user_agent or ""):
+            return profile
+    return DEVICE_PROFILES[0]
 
 
 def _parse_cookie_header(raw):
@@ -198,6 +236,7 @@ class TgtgClient:
         """Fetch a DataDome cookie from the SDK endpoint, mimicking the Android app."""
         cid = _generate_datadome_cid()
         apk_version = getattr(self, "version", DEFAULT_APK_VERSION)
+        profile = _profile_for_user_agent(self.user_agent)
         params = {
             "camera": '{"auth":"true", "info":"{\\"front\\":\\"2000x1500\\",\\"back\\":\\"5472x3648\\"}"}',
             "cid": cid,
@@ -208,15 +247,15 @@ class TgtgClient:
             + str(int(time.time() * 1000))
             + "}]",
             "inte": "android-java-okhttp",
-            "mdl": "Pixel 7 Pro",
+            "mdl": profile["model"],
             "os": "Android",
-            "osn": "UPSIDE_DOWN_CAKE",
-            "osr": "14",
-            "osv": "34",
+            "osn": profile["os_name"],
+            "osr": profile["os_release"],
+            "osv": profile["os_version"],
             "request": request_url,
-            "screen_d": "3.5",
-            "screen_x": "1440",
-            "screen_y": "3120",
+            "screen_d": profile["screen_d"],
+            "screen_x": profile["screen_x"],
+            "screen_y": profile["screen_y"],
             "ua": self.user_agent,
         }
         try:
