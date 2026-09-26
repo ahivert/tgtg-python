@@ -1,600 +1,174 @@
-[![Actions Status](https://github.com/ahivert/tgtg-python/workflows/CI/badge.svg)](https://github.com/ahivert/tgtg-python/actions)
-[![codecov](https://codecov.io/gh/ahivert/tgtg-python/branch/master/graph/badge.svg)](https://codecov.io/gh/ahivert/tgtg-python)
-[![PyPI version](https://img.shields.io/pypi/v/tgtg?color=blue)](https://pypi.org/project/tgtg/)
+# tgtg-python (hardened fork)
 
-# tgtg-python
+[中文说明](README.zh-CN.md) · [Project structure](Structure.md)
 
-Python client that help you to talk with [TooGoodToGo](https://toogoodtogo.com) API.
+An unofficial Python client for the [TooGoodToGo](https://toogoodtogo.com) API, plus a
+watcher script that tells you the moment a surprise bag appears in your favourites.
 
-Python version: 3.9+
+This is a fork of [ahivert/tgtg-python](https://github.com/ahivert/tgtg-python). The
+library keeps the upstream interface; what changed is that several bugs around DataDome
+bot protection and token refresh are fixed, and there is now a watcher built for running
+unattended for weeks without getting the account flagged.
 
-Handle:
+Python 3.9+ · GPL-3.0
 
-- create an account (`/api/auth/vX/signUpByEmail`)
-- login (`/api/auth/vX/authByEmail`)
-- refresh token (`token/v1/refresh`)
-- list stores (`/api/item/vX`)
-- get a store (`/api/item/vX/:id`)
-- get favorites (`/api/discover/vX/bucket`)
-- set favorite (`/api/user/favorite/vX/:id/update`)
-- create an order (`/api/order/vX/create/:id`)
-- abort an order (`/api/order/vX/:id/abort`)
-- get the status of an order (`/api/order/vX/:id/status`)
-- get active orders (`/api/order/vX/active`)
-- get inactive orders (`/api/order/vX/inactive`)
-- get delivery items (`api/manufactureritem/v2`)
+## What this is good for
+
+- **Watching favourites** and getting a push notification when a bag goes on sale.
+- **Reserving** a bag automatically so nobody takes it while you reach for your phone.
+- **Reading** items, stores, orders and order history through the API.
+
+## What it cannot do
+
+- **Pay for an order.** The client can create a reservation (`state: RESERVED`), but
+  payment goes through the mobile SDKs and is not implemented. You finish the purchase in
+  the phone app, within the few minutes the reservation lasts.
+- **Solve a DataDome captcha.** When TooGoodToGo's bot protection decides to challenge
+  you, every call comes back `403` with a `geo.captcha-delivery.com` URL and nothing in
+  this process can answer it. The only cures are waiting and behaving less like a bot.
+- **Run from a VPN or a cloud server.** DataDome scores datacenter and VPN ranges as high
+  risk. Use a residential connection: home broadband or a phone hotspot.
+
+This talks to an undocumented API. Automating it likely breaks TooGoodToGo's terms of
+service, and the account risk is yours.
 
 ## Install
 
-```
-pip install tgtg
-```
-
-## Use it
-
-### Retrieve tokens
-
-Build the client with your email
-
-```python
-from tgtg import TgtgClient
-
-client = TgtgClient(email="<your_email>")
-credentials = client.get_credentials()
-```
-
-You should receive an email from tgtg.
-The client will wait until you validate the login by clicking the link inside the email.
-
-Once you clicked the link, you will get credentials and be able to use them
-
-```python
-print(credentials)
-{
-    'access_token': '<your_access_token>',
-    'refresh_token': '<your_refresh_token>',
-    'cookie': '<cookie>',
-}
-```
-
-### Build the client from tokens
-
-```python
-from tgtg import TgtgClient
-
-client = TgtgClient(access_token="<access_token>", refresh_token="<refresh_token>", cookie="<cookie>")
-
-```
-
-### Get items
-
-```python
-# You can then get some items, by default it will *only* get your favorites
-items = client.get_items()
-print(items)
-
-# To get items (not only your favorites) you need to provide location informations
-items = client.get_items(
-    favorites_only=False,
-    latitude=48.126,
-    longitude=-1.723,
-    radius=10,
-)
-print(items)
-```
-
-<details>
-    <summary>Example response</summary>
-
-```python
-[
-    {
-        "item": {
-            "item_id": "64346",
-            "item_price": {"code": "EUR", "minor_units": 499, "decimals": 2},
-            "sales_taxes": [],
-            "tax_amount": {"code": "EUR", "minor_units": 0, "decimals": 2},
-            "price_excluding_taxes": {"code": "EUR", "minor_units": 499, "decimals": 2},
-            "price_including_taxes": {"code": "EUR", "minor_units": 499, "decimals": 2},
-            "value_excluding_taxes": {
-                "code": "EUR",
-                "minor_units": 1500,
-                "decimals": 2,
-            },
-            "value_including_taxes": {
-                "code": "EUR",
-                "minor_units": 1500,
-                "decimals": 2,
-            },
-            "taxation_policy": "PRICE_INCLUDES_TAXES",
-            "show_sales_taxes": False,
-            "value": {"code": "EUR", "minor_units": 1500, "decimals": 2},
-            "cover_picture": {
-                "picture_id": "110628",
-                "current_url": "https://images.tgtg.ninja/item/cover/2b69cbdd-43d3-4ade-bd51-50e338260859.jpg",
-            },
-            "logo_picture": {
-                "picture_id": "110618",
-                "current_url": "https://images.tgtg.ninja/store/fb893813-a775-4dec-ac7b-d4a7dd326fa8.png",
-            },
-            "name": "",
-            "description": "Salva comida en Ecofamily Bufé y tu pack podrá contener: comidas caseras.",
-            "can_user_supply_packaging": False,
-            "packaging_option": "MUST_BRING_BAG",
-            "collection_info": "",
-            "diet_categories": [],
-            "item_category": "MEAL",
-            "badges": [
-                {
-                    "badge_type": "SERVICE_RATING_SCORE",
-                    "rating_group": "LIKED",
-                    "percentage": 93,
-                    "user_count": 178,
-                    "month_count": 5,
-                }
-            ],
-            "favorite_count": 0,
-            "buffet": False,
-        },
-        "store": {
-            "store_id": "59949s",
-            "store_name": "Ecofamily Bufé - Centro",
-            "branch": "",
-            "description": "",
-            "tax_identifier": "",
-            "website": "",
-            "store_location": {
-                "address": {
-                    "country": {"iso_code": "ES", "name": "Spain"},
-                    "address_line": "Av. de los Piconeros, S/N, 14001 Córdoba, España",
-                    "city": "",
-                    "postal_code": "",
-                },
-                "location": {"longitude": -4.776045, "latitude": 37.894249},
-            },
-            "logo_picture": {
-                "picture_id": "110618",
-                "current_url": "https://images.tgtg.ninja/store/fb893813-a775-4dec-ac7b-d4a7dd326fa8.png",
-            },
-            "store_time_zone": "Europe/Madrid",
-            "hidden": False,
-            "favorite_count": 0,
-            "we_care": False,
-        },
-        "display_name": "Ecofamily Bufé - Centro",
-        "pickup_location": {
-            "address": {
-                "country": {"iso_code": "ES", "name": "Spain"},
-                "address_line": "Av. de los Piconeros, S/N, 14001 Córdoba, España",
-                "city": "",
-                "postal_code": "",
-            },
-            "location": {"longitude": -4.776045, "latitude": 37.894249},
-        },
-        "items_available": 0,
-        "distance": 4241.995584076078,
-        "favorite": True,
-        "in_sales_window": False,
-        "new_item": False,
-    },
-]
-```
-
-</details>
-
-### Get an item
-
-_(Using item_id from get_items response)_
-
-```python
-item = client.get_item(item_id=614318)
-print(item)
-```
-
-<details>
-<summary>Example response</summary>
-
-```python
-{
-    "item": {
-        "item_id": "614318",
-        "sales_taxes": [{"tax_description": "TVA", "tax_percentage": 5.5}],
-        "tax_amount": {"code": "EUR", "minor_units": 13, "decimals": 2},
-        "price_excluding_taxes": {"code": "EUR", "minor_units": 236, "decimals": 2},
-        "price_including_taxes": {"code": "EUR", "minor_units": 249, "decimals": 2},
-        "value_excluding_taxes": {"code": "EUR", "minor_units": 0, "decimals": 2},
-        "value_including_taxes": {"code": "EUR", "minor_units": 0, "decimals": 2},
-        "taxation_policy": "PRICE_INCLUDES_TAXES",
-        "show_sales_taxes": False,
-        "cover_picture": {
-            "picture_id": "620171",
-            "current_url": "https://images.tgtg.ninja/item/cover/ac80c1b3-1386-46a8-ba80-c97b3a6e7e18.png",
-            "is_automatically_created": False,
-        },
-        "logo_picture": {
-            "picture_id": "622046",
-            "current_url": "https://images.tgtg.ninja/store/6280890a-729c-400b-89d8-8b6d5b6cc17b.png",
-            "is_automatically_created": False,
-        },
-        "name": "Panier petit déjeuner",
-        "description": "Sauvez un panier-surprise réalisé à partir des délicieux articles d'un buffet petit déjeuner.",
-        "food_handling_instructions": "",
-        "can_user_supply_packaging": False,
-        "packaging_option": "BAG_ALLOWED",
-        "collection_info": "",
-        "diet_categories": [],
-        "item_category": "BAKED_GOODS",
-        "buffet": True,
-        "badges": [
-            {
-                "badge_type": "SERVICE_RATING_SCORE",
-                "rating_group": "LOVED",
-                "percentage": 96,
-                "user_count": 131,
-                "month_count": 6,
-            },
-            {
-                "badge_type": "OVERALL_RATING_TRUST_SCORE",
-                "rating_group": "LOVED",
-                "percentage": 90,
-                "user_count": 131,
-                "month_count": 6,
-            },
-        ],
-        "positive_rating_reasons": [
-            "POSITIVE_FEEDBACK_FRIENDLY_STAFF",
-            "POSITIVE_FEEDBACK_GREAT_QUANTITY",
-            "POSITIVE_FEEDBACK_QUICK_COLLECTION",
-            "POSITIVE_FEEDBACK_DELICIOUS_FOOD",
-            "POSITIVE_FEEDBACK_GREAT_VALUE",
-            "POSITIVE_FEEDBACK_GREAT_VARIETY",
-        ],
-        "average_overall_rating": {
-            "average_overall_rating": 4.520325203252033,
-            "rating_count": 123,
-            "month_count": 6,
-        },
-        "allergens_info": {"shown_on_checkout": False},
-        "favorite_count": 0,
-    },
-    "store": {
-        "store_id": "624740",
-        "store_name": "Hôtel Les Matins de Paris & Spa",
-        "branch": "",
-        "description": "Vous y êtes. Où ? À South Pigalle (Sopi pour les adeptes), au coeur d’une décontraction trendy.\nVous en êtes : de ceux qui ont déniché un lieu joliment habité, là où se fredonne depuis tant de décennies des airs vivement enjoués. Parce que, pour la petite histoire, notre adresse fut dans les années 50' 60' le repaire des plus arty.\nPile ici, le premier restaurant américain parisien créé par le fantaisiste Leroy Haynes attirait un heureux tohu-bohu, une kyrielle de musiciens, de Ray Charles à Marianne Faithfull…\nAujourd'hui, à vous d'improviser ici un rendez-vous amical, à vous de composer là avec la paresse la plus joyeuse. Se mettre au voluptueux diapason du spa, suivre le rythme des conseils spontanés d’une équipe concernée sont aussi des moments pour vous écouter.\nEntendez-vous la petite musique du lieu ? L'âme des Matins de Paris donne assurément le bon tempo pour prendre ses quartiers, les plus inspirés. ",
-        "tax_identifier": "FR43552132029",
-        "website": "https://www.lesmatinsdeparis.com/",
-        "store_location": {
-            "address": {
-                "country": {"iso_code": "FR", "name": "France"},
-                "address_line": "3 Rue Clauzel, 75009 Paris, France",
-                "city": "",
-                "postal_code": "",
-            },
-            "location": {"longitude": 2.3393925, "latitude": 48.8788434},
-        },
-        "logo_picture": {
-            "picture_id": "622046",
-            "current_url": "https://images.tgtg.ninja/store/6280890a-729c-400b-89d8-8b6d5b6cc17b.png",
-            "is_automatically_created": False,
-        },
-        "store_time_zone": "Europe/Paris",
-        "hidden": False,
-        "favorite_count": 0,
-        "items": [
-            {
-                "item": {
-                    "item_id": "614318",
-                    "sales_taxes": [{"tax_description": "TVA", "tax_percentage": 5.5}],
-                    "tax_amount": {"code": "EUR", "minor_units": 13, "decimals": 2},
-                    "price_excluding_taxes": {
-                        "code": "EUR",
-                        "minor_units": 236,
-                        "decimals": 2,
-                    },
-                    "price_including_taxes": {
-                        "code": "EUR",
-                        "minor_units": 249,
-                        "decimals": 2,
-                    },
-                    "value_excluding_taxes": {
-                        "code": "EUR",
-                        "minor_units": 0,
-                        "decimals": 2,
-                    },
-                    "value_including_taxes": {
-                        "code": "EUR",
-                        "minor_units": 0,
-                        "decimals": 2,
-                    },
-                    "taxation_policy": "PRICE_INCLUDES_TAXES",
-                    "show_sales_taxes": False,
-                    "cover_picture": {
-                        "picture_id": "620171",
-                        "current_url": "https://images.tgtg.ninja/item/cover/ac80c1b3-1386-46a8-ba80-c97b3a6e7e18.png",
-                        "is_automatically_created": False,
-                    },
-                    "logo_picture": {
-                        "picture_id": "622046",
-                        "current_url": "https://images.tgtg.ninja/store/6280890a-729c-400b-89d8-8b6d5b6cc17b.png",
-                        "is_automatically_created": False,
-                    },
-                    "name": "Panier petit déjeuner",
-                    "description": "Sauvez un panier-surprise réalisé à partir des délicieux articles d'un buffet petit déjeuner.",
-                    "food_handling_instructions": "",
-                    "can_user_supply_packaging": False,
-                    "packaging_option": "BAG_ALLOWED",
-                    "collection_info": "",
-                    "diet_categories": [],
-                    "item_category": "BAKED_GOODS",
-                    "buffet": True,
-                    "badges": [
-                        {
-                            "badge_type": "SERVICE_RATING_SCORE",
-                            "rating_group": "LOVED",
-                            "percentage": 96,
-                            "user_count": 131,
-                            "month_count": 6,
-                        },
-                        {
-                            "badge_type": "OVERALL_RATING_TRUST_SCORE",
-                            "rating_group": "LOVED",
-                            "percentage": 90,
-                            "user_count": 131,
-                            "month_count": 6,
-                        },
-                    ],
-                    "positive_rating_reasons": [
-                        "POSITIVE_FEEDBACK_FRIENDLY_STAFF",
-                        "POSITIVE_FEEDBACK_GREAT_QUANTITY",
-                        "POSITIVE_FEEDBACK_QUICK_COLLECTION",
-                        "POSITIVE_FEEDBACK_DELICIOUS_FOOD",
-                        "POSITIVE_FEEDBACK_GREAT_VALUE",
-                        "POSITIVE_FEEDBACK_GREAT_VARIETY",
-                    ],
-                    "average_overall_rating": {
-                        "average_overall_rating": 4.520325203252033,
-                        "rating_count": 123,
-                        "month_count": 6,
-                    },
-                    "favorite_count": 0,
-                },
-                "display_name": "Hôtel Les Matins de Paris & Spa (Panier petit déjeuner)",
-                "pickup_interval": {
-                    "start": "2022-11-04T11:00:00Z",
-                    "end": "2022-11-04T15:00:00Z",
-                },
-                "pickup_location": {
-                    "address": {
-                        "country": {"iso_code": "FR", "name": "France"},
-                        "address_line": "3 Rue Clauzel, 75009 Paris, France",
-                        "city": "",
-                        "postal_code": "",
-                    },
-                    "location": {"longitude": 2.3393925, "latitude": 48.8788434},
-                },
-                "purchase_end": "2022-11-04T15:00:00Z",
-                "items_available": 0,
-                "sold_out_at": "2022-11-03T17:11:32Z",
-                "distance": 0.0,
-                "favorite": True,
-                "in_sales_window": True,
-                "new_item": False,
-            }
-        ],
-        "milestones": [
-            {"type": "MEALS_SAVED", "value": "250"},
-            {"type": "MONTHS_ON_PLATFORM", "value": "6"},
-        ],
-        "we_care": False,
-        "distance": 0.0,
-        "cover_picture": {
-            "picture_id": "620171",
-            "current_url": "https://images.tgtg.ninja/item/cover/ac80c1b3-1386-46a8-ba80-c97b3a6e7e18.png",
-            "is_automatically_created": False,
-        },
-        "is_manufacturer": False,
-    },
-    "display_name": "Hôtel Les Matins de Paris & Spa (Panier petit déjeuner)",
-    "pickup_interval": {"start": "2022-11-04T11:00:00Z", "end": "2022-11-04T15:00:00Z"},
-    "pickup_location": {
-        "address": {
-            "country": {"iso_code": "FR", "name": "France"},
-            "address_line": "3 Rue Clauzel, 75009 Paris, France",
-            "city": "",
-            "postal_code": "",
-        },
-        "location": {"longitude": 2.3393925, "latitude": 48.8788434},
-    },
-    "purchase_end": "2022-11-04T15:00:00Z",
-    "items_available": 0,
-    "sold_out_at": "2022-11-03T17:11:32Z",
-    "distance": 0.0,
-    "favorite": True,
-    "in_sales_window": True,
-    "new_item": False,
-    "sharing_url": "https://share.toogoodtogo.com/download?locale=fr-FR",
-    "next_sales_window_purchase_start": "2022-11-04T15:17:00Z",
-}
-```
-
-</details>
-
-## Create an order
-
-```python
-order = client.create_order(item_id, number_of_items_to_order)
-print(order)
-```
-
-<details>
-<summary>Example response</summary>
-
-```python
-{
-  "id": "<order_id>",
-  "item_id": "<item_id_that_was_ordered>",
-  "state": "RESERVED",
-  "order_line": {
-    "quantity": 1,
-    "item_price_including_taxes": {
-      "code": "EUR",
-      "minor_units": 600,
-      "decimals": 2
-    },
-    "item_price_excluding_taxes": {
-      "code": "EUR",
-      "minor_units": 550,
-      "decimals": 2
-    },
-    "total_price_including_taxes": {
-      "code": "EUR",
-      "minor_units": 600,
-      "decimals": 2
-    },
-    "total_price_excluding_taxes": {
-      "code": "EUR",
-      "minor_units": 550,
-      "decimals": 2
-    }
-  },
-  "reserved_at": "2023-01-01T10:30:32.331280392",
-  "order_type": "MAGICBAG"
-}
-```
-
-</details>
-
-Please note that payment of an order is currently not implemented.
-In other words: you can create an order via this client, but you can not pay for it.
-
-### Get the status of an order
-
-```python
-order_status = client.get_order_status(order_id)
-print(order_status)
-```
-
-<details>
-<summary>Example response</summary>
-
-```python
-{
-  "id": "<order_id>",
-  "item_id": "<item_id_that_was_ordered>",
-  "state": "RESERVED"
-}
-```
-
-</details>
-
-### Abort an order
-
-```python
-client.abort_order(order_id)
-```
-
-When successful, this call will not return a value.
-
-The app uses this call when the user aborts an order before paying for it. When the order has been payed, the app uses a different call.
-
-### Get active orders
-
-```python
-active = client.get_active()
-print(active)
-```
-
-### Get inactive orders
-
-```python
-client.get_inactive(page=0, page_size=20)
-
-# returned object has `has_more` property if more results are available
-```
-
-To e.g. sum up all orders you have ever made:
-
-```python
-    orders = []
-    page = 0
-    while inactive := client.get_inactive(page=page, page_size=200):
-        orders += inactive["orders"]
-        if not inactive["has_more"]:
-            break
-
-    redeemed_orders = [x for x in orders if x["state"] == "REDEEMED"]
-    redeemed_items = sum([x["quantity"] for x in redeemed_orders])
-
-    # if you bought in multiple currencies this will need improvements
-    money_spend = sum(
-        [
-            x["price_including_taxes"]["minor_units"]
-            / (10 ** x["price_including_taxes"]["decimals"])
-            for x in redeemed_orders
-        ]
-    )
-
-    print(f"Total numbers of orders: {len(orders)}")
-    print(f"Total numbers of picked up orders: {len(redeemed_orders)}")
-    print(f"Total numbers of items picked up: {redeemed_items}")
-    print(
-        f"Total money spend: ~{money_spend:.2f}{redeemed_orders[0]['price_including_taxes']['code']}"
-    )
-```
-
-### Get favorites
-
-This will list all the currently set favorite stores.
-
-```python
-favorites = client.get_favorites()
-print(favorites)
-```
-
-The behavior of `get_favorites` is more or less the same as `get_items()`, but better mimics the official application.
-
-### Set favorite
-
-_(Using item_id from get_items response)_
-
-```python
-# add favorite
-client.set_favorite(item_id=64346, is_favorite=True)
-
-# remove favorite
-client.set_favorite(item_id=64346, is_favorite=False)
-```
-
-### Create an account
-
-```python
-from tgtg import TgtgClient
-
-client = TgtgClient()
-client.signup_by_email(email="<your_email>")
-
-# client is now ready to be used
-```
-
-## Developers
-
-This project uses [uv](https://github.com/astral-sh/uv) for dependency management and
-[ruff](https://github.com/astral-sh/ruff) for linting and formatting.
-
-```
+```bash
 pipx install uv
-uv sync
+uv sync --all-extras
 ```
 
-Run linting and formatting:
+Or with a plain virtualenv:
 
-```
-make lint
+```bash
+python -m venv .venv
+./.venv/bin/pip install -e ".[dev]"
 ```
 
-Run all tests:
+## Watcher quick start
 
+```bash
+# 1. Log in once. Asks for the PIN that TooGoodToGo mails you.
+./.venv/bin/python examples/watch_favorites.py --login --email you@example.com
+
+# 2. See what is in your favourites, and whether anything is in stock right now.
+./.venv/bin/python examples/watch_favorites.py --list
+
+# 3. Watch, and push to a private ntfy topic when a bag shows up.
+./.venv/bin/python examples/watch_favorites.py --notify https://ntfy.sh/your-random-topic
+
+# 4. Once notifications are proven, let it reserve for you.
+./.venv/bin/python examples/watch_favorites.py --notify https://ntfy.sh/your-random-topic --reserve 1
 ```
-make test
+
+Credentials are written to `~/.config/tgtg/credentials.json` with mode `0600`, never into
+the repository. Notifications go to [ntfy](https://ntfy.sh), Bark or Telegram; with no
+notification flag everything is simply logged.
+
+### Commands
+
+| Command | What it does |
+| --- | --- |
+| `--login --email <address>` | Interactive PIN login; stores credentials |
+| `--list` | Print every favourite with its current stock, then exit |
+| `--diagnose` | One anonymous probe: is this network getting through at all? |
+| `--reset-identity` | Forget the stored device fingerprint, keep the tokens |
+| `--once` | Poll a single time and exit |
+| (no command) | Watch continuously |
+
+`--diagnose` is the one to reach for when things break. It sends a single request with a
+brand new identity and no credentials, so it separates *this network is blocked* from
+*this account is blocked* — a distinction you cannot make from a failing `--list`.
+
+### Tuning
+
+| Flag | Default | Notes |
+| --- | --- | --- |
+| `--interval` | `120` | Seconds between polls |
+| `--jitter` | `30` | Random ± seconds, so requests are not metronomic |
+| `--active-hours` | `7-23` | Local-time window; `0-24` never sleeps; `22-6` wraps overnight |
+| `--max-polls-per-day` | `600` | Hard ceiling; on reaching it the watcher sleeps until midnight |
+| `--max-reserves-per-day` | `3` | Cap on automatic reservations |
+| `--store <text>` | — | Only watch matching stores; repeatable |
+
+**Check the arithmetic before lowering `--interval`.** A 16-hour window at 60 seconds is
+960 polls, which blows through the 600/day budget by mid-afternoon and leaves you blind
+during the evening drop. Narrow the window instead — it costs fewer requests *and* polls
+faster where it matters:
+
+```bash
+# 5 hours at 60s = 300 polls, half the budget, twice the speed
+./.venv/bin/python examples/watch_favorites.py --active-hours 16-21 --interval 60 \
+    --notify https://ntfy.sh/your-random-topic
 ```
+
+### Running unattended
+
+```bash
+caffeinate -i ./.venv/bin/python examples/watch_favorites.py --notify https://ntfy.sh/your-topic
+```
+
+`caffeinate -i` stops the Mac idling to sleep, which would otherwise pause polling
+silently. Closing a laptop lid sleeps regardless. `tmux` or `nohup` keep the process alive
+when you close the terminal; neither helps with sleep.
+
+## Using the library directly
+
+```python
+from tgtg import TgtgClient
+
+# First run: prompts for the PIN mailed to you
+client = TgtgClient(email="you@example.com")
+credentials = client.get_credentials()
+
+# Later runs: build from stored credentials
+client = TgtgClient(**credentials)
+
+for item in client.get_favorites():
+    print(item["display_name"], item["items_available"])
+```
+
+Every public method calls `login()` first, which refreshes the access token when needed.
+See [docs/api-reference.md](docs/api-reference.md) for endpoint-by-endpoint response
+shapes, and [Structure.md](Structure.md) for how the pieces fit together.
+
+## What was fixed in this fork
+
+Library (`tgtg/`):
+
+- **The DataDome cookie was never sent on authenticated calls.** `cookielib` skips the
+  cookie jar entirely when a request already carries a `Cookie` header, so every request
+  built from stored credentials silently dropped the cookie the client had just fetched.
+- **A token older than a day was never refreshed.** `timedelta.seconds` discards whole
+  days, so a 24h-old token looked one second fresh.
+- **`login()` demanded a cookie**, which is not a credential — a freshly reset client
+  simply fetches a new one.
+- **A new device on every launch.** The user agent, correlation id and DataDome cookie are
+  now reusable across restarts instead of being minted per process.
+- **The user agent contradicted the fingerprint.** The client claimed an Android 9 Nexus 5
+  while telling DataDome it was a Pixel 7 Pro on Android 14. Device profiles now keep the
+  two in sync.
+- **Handshake failures were silent.** `Failed to fetch DataDome cookie` now says whether
+  it was an HTTP 403, a timeout, or an unreadable response.
+
+Watcher (`examples/watch_favorites.py`) adds restraint that a bare polling loop lacks: a
+circuit breaker that stops instead of retrying into a deeper block, a single-instance
+lock, a daily request budget, an active-hours window, and credential handling that keeps
+secrets out of the repository and tokens out of log output.
+
+## Development
+
+```bash
+make test     # pytest with branch coverage
+make lint     # ruff check + ruff format --check
+```
+
+101 tests. The suite mocks HTTP with [responses](https://github.com/getsentry/responses)
+and freezes time with [freezegun](https://github.com/spulec/freezegun); no test touches
+the real API unless `TGTG_EMAIL` is set.
+
+## Credits
+
+Upstream library by [Anthony Hivert](https://github.com/ahivert). Licensed GPL-3.0; see
+[LICENCE](LICENCE).
