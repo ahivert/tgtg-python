@@ -49,7 +49,7 @@ import requests
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from tgtg import API_ITEM_ENDPOINT, TgtgClient  # noqa: E402
+from tgtg import API_ITEM_ENDPOINT, DEVICE_PROFILES, TgtgClient  # noqa: E402
 from tgtg.exceptions import TgtgAPIError  # noqa: E402
 
 # Credentials live outside the repository so an editor, a stray commit or a shared
@@ -89,6 +89,11 @@ def redact(text):
     """Strip anything token-shaped before it can reach a log line or a terminal scrollback."""
     text = JWT_PATTERN.sub("<jwt redacted>", str(text))
     return OPAQUE_TOKEN_PATTERN.sub("<redacted>", text)
+
+
+def has_consistent_fingerprint(user_agent):
+    """A user agent from outside the profile list makes the SDK payload contradict itself."""
+    return any(profile["model"] in (user_agent or "") for profile in DEVICE_PROFILES)
 
 
 def access_token_expiry(access_token):
@@ -380,13 +385,19 @@ class Watcher:
 
     def _build_client(self):
         """Reuse one device identity across restarts instead of minting a new one each launch."""
+        stored_agent = self.state.get("user_agent")
+        if stored_agent and not has_consistent_fingerprint(stored_agent):
+            log("Stored user agent has no matching device profile, picking a consistent one")
+            stored_agent = None
+            self.state.pop("correlation_id", None)
+
         last_refresh, lifetime = self._token_freshness()
         extra = {"access_token_lifetime": lifetime} if lifetime is not None else {}
         if lifetime is not None:
             log(f"Access token still valid for {lifetime / 3600:.1f}h, skipping the token refresh")
         client = TgtgClient(
             **self.credentials,
-            user_agent=self.state.get("user_agent"),
+            user_agent=stored_agent,
             correlation_id=self.state.get("correlation_id"),
             last_time_token_refreshed=last_refresh,
             timeout=30,

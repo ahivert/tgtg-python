@@ -14,18 +14,20 @@ import responses
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "examples"))
 
 import watch_favorites as wf  # noqa: E402
-from tgtg import API_ITEM_ENDPOINT, BASE_URL, DATADOME_SDK_URL, TgtgClient  # noqa: E402
+from tgtg import API_ITEM_ENDPOINT, BASE_URL, DATADOME_SDK_URL, DEVICE_PROFILES, TgtgClient  # noqa: E402
 from tgtg.exceptions import TgtgAPIError  # noqa: E402
 
 CAPTCHA_403 = b'{"url":"https://geo.captcha-delivery.com/interstitial/?initialCid=abc&cid=def"}'
 UNAUTHORIZED_403 = b'{"errors":[{"code":"UNAUTHORIZED"}]}'
+# Must belong to a device profile, otherwise the watcher rightly replaces it.
+PROFILE_AGENT = DEVICE_PROFILES[0]["user_agent"].format("26.9.5")
 
 
 def build_watcher(tmp_path, credentials_token="a", **overrides):
     credentials = tmp_path / "creds.json"
     wf.save_credentials(credentials, {"access_token": credentials_token, "refresh_token": "r", "cookie": "datadome=d"})
     state = tmp_path / "state.json"
-    wf.save_state(state, {"user_agent": "TGTG/1 test", "correlation_id": "cid-1"})
+    wf.save_state(state, {"user_agent": PROFILE_AGENT, "correlation_id": "cid-1"})
 
     args = wf.build_parser().parse_args([])
     args.credentials = credentials
@@ -39,7 +41,7 @@ def build_watcher(tmp_path, credentials_token="a", **overrides):
 def test_device_identity_survives_restart(tmp_path):
     """A new user agent and correlation id on every launch makes one device look like many."""
     watcher = build_watcher(tmp_path)
-    assert watcher.client.user_agent == "TGTG/1 test"
+    assert watcher.client.user_agent == PROFILE_AGENT
     assert watcher.client.correlation_id == "cid-1"
 
 
@@ -156,7 +158,7 @@ def test_list_reports_a_block_without_a_traceback(tmp_path, monkeypatch, capsys)
     credentials = tmp_path / "creds.json"
     wf.save_credentials(credentials, {"access_token": "a", "refresh_token": "r", "cookie": "datadome=d"})
     state = tmp_path / "state.json"
-    wf.save_state(state, {"user_agent": "TGTG/1 test", "correlation_id": "cid-1"})
+    wf.save_state(state, {"user_agent": PROFILE_AGENT, "correlation_id": "cid-1"})
     monkeypatch.setattr(wf.Watcher, "list_favourites", _raise_captcha)
 
     code = wf.main(["--list", "--credentials", str(credentials), "--state", str(state)])
@@ -197,7 +199,7 @@ def test_reset_identity_forgets_the_fingerprint_but_keeps_tokens(tmp_path):
     credentials = tmp_path / "creds.json"
     wf.save_credentials(credentials, {"access_token": "a", "refresh_token": "r", "cookie": "s=1; Datadome=BURNED"})
     state = tmp_path / "state.json"
-    wf.save_state(state, {"user_agent": "TGTG/1 test", "correlation_id": "cid-1", "polls": 7})
+    wf.save_state(state, {"user_agent": PROFILE_AGENT, "correlation_id": "cid-1", "polls": 7})
 
     args = wf.build_parser().parse_args([])
     args.credentials, args.state = credentials, state
@@ -216,7 +218,7 @@ def test_reset_identity_survives_a_datadome_only_cookie(tmp_path):
     credentials = tmp_path / "creds.json"
     wf.save_credentials(credentials, {"access_token": "a", "refresh_token": "r", "cookie": "datadome=BURNED; Path=/"})
     state = tmp_path / "state.json"
-    wf.save_state(state, {"user_agent": "TGTG/1 test", "correlation_id": "cid-1"})
+    wf.save_state(state, {"user_agent": PROFILE_AGENT, "correlation_id": "cid-1"})
 
     args = wf.build_parser().parse_args([])
     args.credentials, args.state = credentials, state
@@ -255,3 +257,39 @@ def test_a_valid_token_skips_the_refresh_endpoint(tmp_path):
 def test_an_expiring_token_still_refreshes(tmp_path):
     watcher = build_watcher(tmp_path, credentials_token=_jwt(60))
     assert watcher.client.last_time_token_refreshed is None, "a token about to die must be refreshed"
+
+
+def test_legacy_user_agent_is_replaced_with_a_consistent_one(tmp_path):
+    """A UA persisted before the device profiles existed silently contradicted the SDK payload."""
+    assert not wf.has_consistent_fingerprint("TGTG/26.9.5 Dalvik/2.1.0 (Linux; Android 12; SM-G920V Build/MMB29K)")
+
+    credentials = tmp_path / "creds.json"
+    wf.save_credentials(credentials, {"access_token": "a", "refresh_token": "r", "cookie": ""})
+    state = tmp_path / "state.json"
+    wf.save_state(state, {"user_agent": "TGTG/1 (Linux; Android 12; SM-G920V)", "correlation_id": "old-cid"})
+
+    args = wf.build_parser().parse_args([])
+    args.credentials, args.state = credentials, state
+    args.active_hours_window = None
+    watcher = wf.Watcher(args, wf.Notifier())
+
+    assert wf.has_consistent_fingerprint(watcher.client.user_agent)
+    assert watcher.client.correlation_id != "old-cid", "a new device gets a new correlation id"
+
+
+def test_a_profile_user_agent_is_kept(tmp_path):
+    kept = DEVICE_PROFILES[1]["user_agent"].format("26.9.5")
+    assert wf.has_consistent_fingerprint(kept)
+
+    credentials = tmp_path / "creds.json"
+    wf.save_credentials(credentials, {"access_token": "a", "refresh_token": "r", "cookie": ""})
+    state = tmp_path / "state.json"
+    wf.save_state(state, {"user_agent": kept, "correlation_id": "keep-cid"})
+
+    args = wf.build_parser().parse_args([])
+    args.credentials, args.state = credentials, state
+    args.active_hours_window = None
+    watcher = wf.Watcher(args, wf.Notifier())
+
+    assert watcher.client.user_agent == kept
+    assert watcher.client.correlation_id == "keep-cid"
