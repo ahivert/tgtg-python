@@ -43,8 +43,8 @@ The entire library is a single class `TgtgClient` in `tgtg/__init__.py` (~522 li
 
 ### Key components
 
-- **`tgtg/__init__.py`** - `TgtgClient` class plus all API endpoint constants. Every public method calls `self.login()` first, which handles token refresh automatically. The client uses `requests.Session` for HTTP, with Android user-agent spoofing. All API calls go through the central `_post()` method which handles DataDome cookie management and 403 retry logic.
-- **`tgtg/exceptions.py`** - Three exception types: `TgtgLoginError`, `TgtgAPIError`, `TgtgPollingError`.
+- **`tgtg/__init__.py`** - `TgtgClient` class plus all API endpoint constants. Every public method calls `self.login()` first, which handles token refresh automatically. The client uses `requests.Session` for HTTP, with Android user-agent spoofing. All API calls go through the central `_post()` method which handles DataDome cookies and reports protection blocks without automatically replaying requests.
+- **`tgtg/exceptions.py`** - Exception types: `TgtgLoginError`, `TgtgAPIError`, `TgtgPollingError`, and `TgtgProtectionError` (a subclass of `TgtgAPIError`).
 - **`tgtg/google_play_scraper.py`** - Scrapes the Google Play Store page to get the current TooGoodToGo APK version for user-agent strings. Falls back to `DEFAULT_APK_VERSION`.
 
 ### DataDome bot protection
@@ -52,7 +52,7 @@ The entire library is a single class `TgtgClient` in `tgtg/__init__.py` (~522 li
 TooGoodToGo uses DataDome for bot protection. The client handles this by:
 
 1. Fetching a `datadome` cookie from `https://api-sdk.datadome.co/sdk/` before API requests, mimicking the Android app's DataDome SDK integration (device fingerprint parameters like model, OS version, screen size).
-2. The `_post()` method automatically ensures a DataDome cookie is present. On 403, it invalidates the cookie and retries with a fresh one.
+2. The `_post()` method checks for an applicable, unexpired DataDome cookie. Recognized protection blocks invalidate only applicable protection cookies and raise `TgtgProtectionError`; requests are never automatically replayed. Unrelated cookies are preserved.
 3. The `_generate_datadome_cid()` helper creates random 120-char client IDs matching DataDome's expected format.
 4. VPN/datacenter IPs are frequently blocked by DataDome regardless of cookie validity — residential IPs work best.
 
