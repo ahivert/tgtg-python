@@ -21,7 +21,8 @@ Handle:
 - abort an order (`/api/order/vX/:id/abort`)
 - get the status of an order (`/api/order/vX/:id/status`)
 - get active orders (`/api/order/vX/active`)
-- get inactive orders (`/api/order/vX/inactive`)
+- get monthly order history (`/api/order/v8`, with year/month cursors)
+- get inactive orders via the legacy endpoint (`/api/order/vX/inactive`)
 - get delivery items (`api/manufactureritem/v2`)
 
 ## Install
@@ -484,7 +485,34 @@ active = client.get_active()
 print(active)
 ```
 
-### Get inactive orders
+### Get order history
+
+Order history uses monthly groups and year/month pagination cursors:
+
+```python
+history = client.get_order_history(page_size=20)
+
+for month in history["orders_per_month"]:
+    for order in month["orders"]:
+        print(order)
+
+if history.get("has_more"):
+    next_page = client.get_order_history(
+        page_size=20,
+        next_page_year=history["next_page_year"],
+        next_page_month=history["next_page_month"],
+    )
+```
+
+The method returns the full response, including `has_more`, both cursors and
+`orders_per_month`. Use returned cursors rather than incrementing a page number.
+This method is covered by mocked HTTP tests; live API compatibility is unverified.
+
+### Get inactive orders (legacy)
+
+`get_inactive()` is preserved unchanged for existing consumers. Its numeric-page
+contract differs from `get_order_history()`, and live availability is unverified.
+The following example applies only to servers supporting that legacy contract.
 
 ```python
 client.get_inactive(page=0, page_size=20)
