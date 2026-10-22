@@ -23,6 +23,7 @@ SIGNUP_BY_EMAIL_ENDPOINT = "auth/v5/signUpByEmail"
 REFRESH_ENDPOINT = "token/v1/refresh"
 ACTIVE_ORDER_ENDPOINT = "order/v8/active"
 INACTIVE_ORDER_ENDPOINT = "order/v8/inactive"
+ORDER_HISTORY_ENDPOINT = "order/v8"
 CREATE_ORDER_ENDPOINT = "order/v8/create/"
 ABORT_ORDER_ENDPOINT = "order/v8/{}/abort"
 ORDER_STATUS_ENDPOINT = "order/v8/{}/status"
@@ -492,6 +493,24 @@ class TgtgClient:
         response = self._post(
             self._get_url(INACTIVE_ORDER_ENDPOINT),
             json={"paging": {"page": page, "size": page_size}},
+        )
+        if response.status_code == HTTPStatus.OK:
+            return response.json()
+        else:
+            raise TgtgAPIError(response.status_code, response.content)
+
+    def get_order_history(self, *, page_size=20, next_page_year=None, next_page_month=None):
+        """Return monthly order history, preserving the server's pagination cursors."""
+        self.login()
+        response = self._post(
+            self._get_url(ORDER_HISTORY_ENDPOINT),
+            json={
+                "paging": {
+                    "size": page_size,
+                    "next_page_year": next_page_year,
+                    "next_page_month": next_page_month,
+                }
+            },
         )
         if response.status_code == HTTPStatus.OK:
             return response.json()
