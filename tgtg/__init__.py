@@ -35,7 +35,7 @@ DATADOME_SDK_URL = "https://api-sdk.datadome.co/sdk/"
 DEFAULT_APK_VERSION = "26.7.2"
 USER_AGENTS = [
     # Samsung Galaxy S24 Ultra (Android 14)
-    "TGTG/{} Dalvik/2.1.0 (Linux; U; Android 14; SM-S928B Build/UP1A.231005.007)",    
+    "TGTG/{} Dalvik/2.1.0 (Linux; U; Android 14; SM-S928B Build/UP1A.231005.007)",
     # Google Pixel 8 Pro (Android 15)
     "TGTG/{} Dalvik/2.1.0 (Linux; U; Android 15; Pixel 8 Pro Build/AP3A.241105.008)",
     # OnePlus 12 (Android 14)
