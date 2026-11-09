@@ -1,17 +1,21 @@
 import datetime
+import logging
 import random
-import re
 import sys
 import time
 import uuid
 from http import HTTPStatus
+from http.cookiejar import http2time
+from http.cookies import CookieError, SimpleCookie
 from urllib.parse import urljoin, urlsplit
 
 import requests
 
 from tgtg.google_play_scraper import get_last_apk_version
 
-from .exceptions import TgtgAPIError, TgtgLoginError, TgtgPollingError
+from .exceptions import TgtgAPIError, TgtgLoginError, TgtgPollingError, TgtgProtectionError
+
+logger = logging.getLogger(__name__)
 
 BASE_URL = "https://apptoogoodtogo.com/api/"
 API_ITEM_ENDPOINT = "item/v9/"
@@ -84,6 +88,8 @@ class TgtgClient:
         self.timeout = timeout
         self.session = requests.Session()
         self.session.headers = self._headers
+        for morsel in SimpleCookie(cookie or "").values():
+            self._store_cookie(morsel)
 
     def _get_user_agent(self):
         try:
@@ -117,8 +123,6 @@ class TgtgClient:
             "user-agent": self.user_agent,
             "x-correlation-id": self.correlation_id,
         }
-        if self.cookie:
-            headers["Cookie"] = self.cookie
         if self.access_token:
             headers["authorization"] = f"Bearer {self.access_token}"
         return headers
@@ -126,6 +130,31 @@ class TgtgClient:
     @property
     def _already_logged(self):
         return bool(self.access_token and self.refresh_token)
+
+    def _store_cookie(self, morsel):
+        origin = urlsplit(self.base_url)
+        if not origin.hostname:
+            raise ValueError("The API URL must have a hostname")
+        domain = morsel["domain"].lstrip(".").lower() or origin.hostname
+        if origin.hostname != domain and not origin.hostname.endswith("." + domain):
+            raise ValueError("Cookie domain does not match the API host")
+        expires = None
+        if morsel["max-age"]:
+            expires = int(time.time()) + int(morsel["max-age"])
+        elif morsel["expires"]:
+            expires = http2time(morsel["expires"])
+            if expires is None:
+                raise ValueError("Invalid cookie expiration")
+        cookie = requests.cookies.create_cookie(
+            morsel.key,
+            morsel.value,
+            domain=f".{domain}" if morsel["domain"] else domain,
+            path=morsel["path"] or "/",
+            secure=origin.scheme == "https" or bool(morsel["secure"]),
+            expires=expires,
+        )
+        cookie.domain_specified = bool(morsel["domain"])
+        self.session.cookies.set_cookie(cookie)
 
     def _fetch_datadome_cookie(self, request_url):
         """Fetch a DataDome cookie from the SDK endpoint, mimicking the Android app."""
@@ -162,30 +191,37 @@ class TgtgClient:
                     "User-Agent": self.user_agent,
                     "Accept-Encoding": "gzip, deflate, br",
                 },
-                timeout=10,
+                proxies=self.proxies,
+                timeout=self.timeout if self.timeout is not None else 10,
             )
             r.raise_for_status()
             data = r.json()
-            if data.get("status") == 200 and data.get("cookie"):
-                m = re.search(r"datadome=([^;]+)", data["cookie"])
-                if m:
-                    domain = urlsplit(self.base_url).hostname
-                    self.session.cookies.set(
-                        "datadome",
-                        m.group(1),
-                        domain=f".{domain}",
-                        path="/",
-                        secure=True,
-                    )
-        except Exception:
-            sys.stdout.write("Failed to fetch DataDome cookie\n")
+            if not isinstance(data, dict) or data.get("status") != 200 or not isinstance(data.get("cookie"), str):
+                raise ValueError("Invalid cookie response")
+            cookies = SimpleCookie(data["cookie"])
+            if "datadome" not in cookies or not cookies["datadome"].value:
+                raise ValueError("Missing protection cookie")
+            self._store_cookie(cookies["datadome"])
+            if not any(self._datadome_cookies(request_url)):
+                raise ValueError("Protection cookie does not apply to the request")
+        except (requests.RequestException, ValueError, TypeError, CookieError) as exc:
+            logger.warning("Could not obtain DataDome cookie (%s).", type(exc).__name__)
+
+    def _datadome_cookies(self, request_url):
+        request = requests.Request("POST", request_url).prepare()
+        for cookie in self.session.cookies:
+            if cookie.name == "datadome" and cookie.value:
+                jar = requests.cookies.RequestsCookieJar()
+                jar.set_cookie(cookie)
+                if requests.cookies.get_cookie_header(jar, request):
+                    yield cookie
 
     def _ensure_datadome_cookie(self, request_url):
-        if "datadome" not in self.session.cookies:
+        if not any(self._datadome_cookies(request_url)):
             self._fetch_datadome_cookie(request_url)
 
     def _post(self, url, **kwargs):
-        """POST with automatic DataDome cookie handling."""
+        """Send once: replaying a POST can duplicate a state-changing operation."""
         self._ensure_datadome_cookie(url)
         response = self.session.post(
             url,
@@ -194,16 +230,14 @@ class TgtgClient:
             timeout=self.timeout,
             **kwargs,
         )
-        if response.status_code == 403:
-            # Invalidate and retry with fresh DataDome cookie
-            self.session.cookies.clear()
-            self._fetch_datadome_cookie(url)
-            response = self.session.post(
-                url,
-                headers=self._headers,
-                proxies=self.proxies,
-                timeout=self.timeout,
-                **kwargs,
+        if response.status_code >= 400 and any(
+            response.headers.get(header) for header in ("X-DD-B", "X-SF-CC-X-dd-b")
+        ):
+            for cookie in list(self._datadome_cookies(url)):
+                self.session.cookies.clear(cookie.domain, cookie.path, cookie.name)
+            raise TgtgProtectionError(
+                response.status_code,
+                "Bot protection blocked the request. User verification may be required; the request was not retried.",
             )
         return response
 

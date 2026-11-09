@@ -581,6 +581,26 @@ client.signup_by_email(email="<your_email>")
 # client is now ready to be used
 ```
 
+## Bot protection and retries
+
+Requests are not automatically replayed after a rejection, including order creation.
+A recognized bot-protection block raises `TgtgProtectionError`, a subclass of
+`TgtgAPIError`. Other HTTP errors retain their existing exception behavior.
+
+```python
+from tgtg.exceptions import TgtgProtectionError
+
+try:
+    items = client.get_items()
+except TgtgProtectionError:
+    print("Request blocked; stop and check access before trying again.")
+```
+
+The client does not solve interactive challenges. Avoid retry loops when blocked.
+Cookies are managed by the session with their expiry and scope; unrelated cookies
+are preserved. Cookie acquisition failures emit a warning without credentials or
+response bodies, and the API request is still attempted once.
+
 ## Developers
 
 This project uses [uv](https://github.com/astral-sh/uv) for dependency management and
