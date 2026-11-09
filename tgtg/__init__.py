@@ -32,11 +32,18 @@ MANUFACTURER_ITEM_ENDPOINT = "manufactureritem/v2"
 DATADOME_SDK_URL = "https://api-sdk.datadome.co/sdk/"
 
 
-DEFAULT_APK_VERSION = "24.11.0"
+DEFAULT_APK_VERSION = "26.7.2"
 USER_AGENTS = [
-    "TGTG/{} Dalvik/2.1.0 (Linux; U; Android 9; Nexus 5 Build/M4B30Z)",
-    "TGTG/{} Dalvik/2.1.0 (Linux; U; Android 10; SM-G935F Build/NRD90M)",
-    "TGTG/{} Dalvik/2.1.0 (Linux; Android 12; SM-G920V Build/MMB29K)",
+    # Samsung Galaxy S24 Ultra (Android 14)
+    "TGTG/{} Dalvik/2.1.0 (Linux; U; Android 14; SM-S928B Build/UP1A.231005.007)",
+    # Google Pixel 8 Pro (Android 15)
+    "TGTG/{} Dalvik/2.1.0 (Linux; U; Android 15; Pixel 8 Pro Build/AP3A.241105.008)",
+    # OnePlus 12 (Android 14)
+    "TGTG/{} Dalvik/2.1.0 (Linux; U; Android 14; CPH2581 Build/UKQ1.230924.001)",
+    # Nothing Phone (2a) (Android 14)
+    "TGTG/{} Dalvik/2.1.0 (Linux; U; Android 14; A065 Build/UKQ1.231004.002)",
+    # Sony Xperia 1 V (Android 14)
+    "TGTG/{} Dalvik/2.1.0 (Linux; U; Android 14; XQ-DQ54 Build/64.2.A.2.136)",
 ]
 DEFAULT_ACCESS_TOKEN_LIFETIME = 3600 * 4  # 4 hours
 MAX_POLLING_TRIES = 24  # 24 * POLLING_WAIT_TIME = 2 minutes
