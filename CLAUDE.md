@@ -4,7 +4,7 @@ This file provides guidance to agents when working with code in this repository.
 
 ## Project Overview
 
-Unofficial Python client for the [TooGoodToGo](https://toogoodtogo.com) API. Published on PyPI as `tgtg`. Python 3.9+. Licensed under GPL-3.0.
+Unofficial Python client for the [TooGoodToGo](https://toogoodtogo.com) API. Published on PyPI as `tgtg`. Python 3.11+. Licensed under GPL-3.0.
 
 ## Commands
 
